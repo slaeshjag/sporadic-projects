@@ -1,0 +1,9 @@
+*.o
+*.elf
+*.swp
+*.swo
+*.so
+*.a
+*.dll
+*.exe
+*.ldi
