@@ -19,6 +19,7 @@ struct mesh {
 	struct mesh_triangle	*tri;
 	int			tri_width;
 	int			tri_depth;
+	int			detail;
 };
 
 

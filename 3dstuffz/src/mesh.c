@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define	ABSF(x)			(x) < 0 ? ((x) * -1.0f) : (x)
+
 static void mesh_tri_set(struct mesh *m, int i, int p, float x, float y, float z) {
 	m->tri[i].p[p].x = x;
 	m->tri[i].p[p].z = z;
@@ -27,6 +29,7 @@ struct mesh *mesh_alloc(int width, int depth, int detail) {
 	m = malloc(sizeof(*m));
 	m->tri_width = vert_x;
 	m->tri_depth = vert_z / 2;
+	m->detail = detail;
 
 	m->tri = malloc(sizeof(*m->tri) * m->tri_width * m->tri_depth);
 
@@ -53,4 +56,17 @@ struct mesh *mesh_alloc(int width, int depth, int detail) {
 			mesh_tri_set(m, k + 1, 2, x2, y3, z2);
 		}
 	return m;
+}
+
+
+int mesh_collide_test_small(struct mesh *m, float x, float y, float z, float h, float r) {
+	int center;
+	int cx, cz, cr;
+
+	r *= r;
+	cx = (x * m->detail * 2);
+	cz = (z * m->detail);
+	
+	center = roundf(cx + cz * m->tri_width);
+	cr = roundf(r * m->detail);
 }

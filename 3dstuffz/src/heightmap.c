@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define	ABSF(x)			(x) < 0 ? ((x) * -1.0f) : (x)
 struct heightmap *heightmap_generate(int points_w, int points_d, int detail) {
 	struct heightmap *hm;
 	int i, j, k;
@@ -17,7 +16,7 @@ struct heightmap *heightmap_generate(int points_w, int points_d, int detail) {
 	for (i = 0; i < points_d; i++)
 		for (j = 0; j < points_w; j++) {
 			k = i * points_w + j;
-			hm->height[k] = (sinf(2 * M_PI / points_w * j) * cosf(2 * M_PI / points_d * i)) * 1.0f;
+			hm->height[k] = (sinf(2 * M_PI / points_w * j) * cosf(2 * M_PI / points_d * i)) * 1.0f * sqrt((float) (i*j) / detail / detail);
 		}
 	return hm;
 }
