@@ -25,5 +25,7 @@ struct mesh {
 
 struct mesh *mesh_alloc(int width, int depth, int detail);
 void mesh_heightmap_apply(struct mesh *m, struct heightmap *hm);
+/* Returns >= 0 if collision */
+float mesh_collide_test_small(struct mesh *m, float x, float y, float z, float h, float r);
 
 #endif
