@@ -63,30 +63,36 @@ struct mesh *mesh_alloc(int width, int depth, int detail) {
 float mesh_collide_test_small(struct mesh *m, float x, float y, float z, float h, float r) {
 	int center, c, i, j, cc;
 	int cx, cz, d;
-	float fx, fz, max_dy, fdy;
+	float fx, fz, max_dy, max_above, fdy;
 
 	max_dy = -HUGE_VALF;
-	r *= r;
+	max_above = -HUGE_VALF;
 	cx = (x * m->detail * 2);
 	cz = (z * m->detail);
 	
 	center = (cx + cz * m->tri_width + 0.5f);
-	d = ((r * m->detail) + 0.5f);
+	d = ((r * m->detail * 2) + 0.5f);
 	c = center - (d * m->tri_width * 2.0f + d);
 	
-	for (j = 0; j < d + 1; j++)
+	for (j = 0; j < d * 2 + 1; j++)
 		for (i = 0; i < d * 2 + 1; i++) {
-			cc = c + d * 4 * j + i;
+			cc = c + m->tri_width * j + i;
+			cc += m->tri_width / 2;
+			cc += m->tri_depth / 2 * m->tri_width;
 			if (cc < 0 || cc > m->tri_width * m->tri_depth)
 				continue;
 			fx = x - m->tri[cc].p[0].x;
 			fz = z - m->tri[cc].p[0].z;
-			if (fx * fx + fz * fz < r) {	/* Within circle, test collision */
-				fdy = y - m->tri[cc].p[0].y;
-				if (fdy > max_dy)
+			if (fx * fx + fz * fz < r*r) {	/* Within circle, test collision */
+				fdy = m->tri[cc].p[0].y - y;
+				if (fdy > max_dy) {
 					if (fdy > 0 && y + h > m->tri[cc].p[0].y)
 						max_dy = fdy;
-			}
+					else if (fdy > 0 && max_above < fdy)
+						max_above = fdy;
+				}
+			} 
 		}
-	return max_dy;
+	
+	return (max_dy != -HUGE_VALF && max_above != -HUGE_VALF) ? max_above : max_dy;
 }
