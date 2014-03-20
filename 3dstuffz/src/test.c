@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 			z += 0.2f;
 		glLoadIdentity();
 		gluPerspective(45.0, 800.0f/480.0f, 0.1f, 500.0f);
-		gluLookAt(0.0f, y + 1.0f, z, 0.0f, y + 1.0f, z-6.0f, 0.0f, 1.0f, 0.0f);
+		gluLookAt(0.0f, y + 1.7f, z, 0.0f, y + 1.7f, z-6.0f, 0.0f, 1.0f, 0.0f);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(3, GL_FLOAT, 0, m->tri);
 		glDrawArrays(GL_POINTS, 0, m->tri_width * m->tri_depth * 3);
