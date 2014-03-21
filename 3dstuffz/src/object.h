@@ -6,6 +6,7 @@
 struct object_props {
 	unsigned int			gravity	: 1;
 	unsigned int			solid	: 1;
+	unsigned int			present	: 1;
 };
 
 
@@ -22,11 +23,11 @@ struct object {
 };
 
 
-struct {
+struct object_state {
 	struct object			*o;
 	int				max_objects;
 	DARNIT_BBOX			*bbox;
-} object_state;
+};
 
 
 #endif
