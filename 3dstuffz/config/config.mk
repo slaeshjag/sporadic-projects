@@ -60,7 +60,7 @@ ifneq (,$(findstring -DPANDORA, $(CFLAGS)))
 	PLATFORM=	linux
 else
 	#Linux defaults
-	LDFLAGS	+=	-lGLU
+	LDFLAGS	+=	-lGLU -lGL
 	PLATFORM=	linux
 endif
 endif

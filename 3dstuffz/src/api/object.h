@@ -7,6 +7,7 @@ enum object_message {
 	O_MSG_LOOP,
 	O_MSG_DONE,
 	O_MSG_NEXT,
+	O_MSG_COLL,
 	O_MSG_KILL,
 };
 
