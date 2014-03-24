@@ -17,13 +17,13 @@ void message_loop(struct object_state *os, struct object_message_s msg) {
 }
 
 
-void message_obj_noargs(struct *object_state *os, enum object_message msg, int id, int from) {
-	struct object_message_s msg;
+void message_obj_noargs(struct object_state *os, enum object_message msg, int id, int from) {
+	struct object_message_s ms;
 
-	msg.to = id;
-	msg.from = -1;
-	msg.msg = msg;
-	message_loop(os, msg);
+	ms.to = id;
+	ms.from = from;
+	ms.msg = msg;
+	message_loop(os, ms);
 	return;
 }
 
