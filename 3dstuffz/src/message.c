@@ -4,6 +4,8 @@
 
 void message_loop(struct object_state *os, struct object_message_s msg) {
 	while (msg.msg != O_MSG_DONE) {
+		msg.os = os;
+
 		if (msg.to < 0 || msg.to >= os->max_objects)
 			return;
 		if (!os->o[msg.to].props.present)
@@ -11,6 +13,7 @@ void message_loop(struct object_state *os, struct object_message_s msg) {
 		if (!os->o[msg.to].ai)
 			return;
 		msg = os->o[msg.to].ai(msg);
+		msg.os = os;
 	}
 
 	return;

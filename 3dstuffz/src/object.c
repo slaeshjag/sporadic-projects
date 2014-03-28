@@ -13,6 +13,7 @@ void object_state_init(int max_objects, struct object_state *os, const char *lib
 
 	for (i = 0; i < os->max_objects; i++)
 		os->o[i].props.present = 1;
+	os->o_cache = malloc(sizeof(*os->o_cache) * max_objects);
 
 	return;
 }
@@ -50,6 +51,13 @@ void object_free(int obj, struct object_state *os) {
 	os->o[obj].props.present = 0;
 	
 	/* TODO: Call AI destructor */
+
+	return;
+}
+
+
+void object_loop(int obj, struct object_state *os) {
+	int i;
 
 	return;
 }
