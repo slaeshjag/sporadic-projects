@@ -19,7 +19,7 @@ struct object_area {
 	float				w;
 	float				h;
 	float				d;
-}
+};
 
 
 struct object_message_s {
@@ -50,7 +50,6 @@ struct object {
 	float				vel_x;
 	float				vel_y;
 	float				vel_z;
-	struct object_area		active_area;
 	
 	struct object_props		props;
 
@@ -61,9 +60,10 @@ struct object {
 
 struct object_state {
 	struct object			*o;
-	int				*o_cache;
+	unsigned int			*o_cache;
 	int				max_objects;
 	void				*bbox;
+	struct object_area		active_area;
 
 	void				*lib;
 };

@@ -56,8 +56,13 @@ void object_free(int obj, struct object_state *os) {
 }
 
 
-void object_loop(int obj, struct object_state *os) {
-	int i;
+void object_loop(struct object_state *os) {
+	int i, max;
+	
+	max = d_bbox_test(os->bbox, os->active_area.x, os->active_area.z, os->active_area.w, os->active_area.d, os->o_cache, os->max_objects);
+	for (i = 0; i < max; i++) {
+		/* TODO: Loop through objects here */
+	}
 
 	return;
 }
