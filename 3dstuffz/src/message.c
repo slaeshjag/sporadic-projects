@@ -47,3 +47,9 @@ void message_obj_collision(struct object_state *os, int id, int from) {
 	message_obj_noargs(os, O_MSG_COLL, id, from);
 	return;
 }
+
+
+void message_obj_loop(struct object_state *os, int id, int from) {
+	message_obj_noargs(os, O_MSG_LOOP, id, from);
+	return;
+}
