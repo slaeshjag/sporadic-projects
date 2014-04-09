@@ -4,6 +4,8 @@
 
 void message_loop(struct object_state *os, struct object_message_s msg) {
 	while (msg.msg != O_MSG_DONE) {
+		msg.os = os;
+
 		if (msg.to < 0 || msg.to >= os->max_objects)
 			return;
 		if (!os->o[msg.to].props.present)
@@ -11,19 +13,20 @@ void message_loop(struct object_state *os, struct object_message_s msg) {
 		if (!os->o[msg.to].ai)
 			return;
 		msg = os->o[msg.to].ai(msg);
+		msg.os = os;
 	}
 
 	return;
 }
 
 
-void message_obj_noargs(struct *object_state *os, enum object_message msg, int id, int from) {
-	struct object_message_s msg;
+void message_obj_noargs(struct object_state *os, enum object_message msg, int id, int from) {
+	struct object_message_s ms;
 
-	msg.to = id;
-	msg.from = -1;
-	msg.msg = msg;
-	message_loop(os, msg);
+	ms.to = id;
+	ms.from = from;
+	ms.msg = msg;
+	message_loop(os, ms);
 	return;
 }
 
@@ -42,5 +45,11 @@ void message_obj_destroy(struct object_state *os, int id) {
 
 void message_obj_collision(struct object_state *os, int id, int from) {
 	message_obj_noargs(os, O_MSG_COLL, id, from);
+	return;
+}
+
+
+void message_obj_loop(struct object_state *os, int id, int from) {
+	message_obj_noargs(os, O_MSG_LOOP, id, from);
 	return;
 }
