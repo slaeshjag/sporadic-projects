@@ -2,22 +2,24 @@
 #include <GL/gl.h>
 
 #define	GRAYSCALE_BITS	6
-#define	RLE_MAX		4
+#define	RLE_MAX		5
 #define	WIDTH		640
 #define	HEIGHT		480
+#define	LUMA_SMUDGE_DIFF	10
+#define	abs(x)		(((x) < 0) ? (-(x)) : (x))
 
 
 int rle_encode(int *luma, int w, int h) {
-	int rle_cnt, rle[w*h], i, old, old_cnt, rle_bits;
+	int rle_cnt, rle[w*h], i, old, old_cnt, rle_bits, j;
 
 	for (i = old = rle_cnt = rle_bits = old_cnt = 0; i < w * h; i++) {
 		if (luma[i] == old && old_cnt < (1 << RLE_MAX));
 		else {
-			if (old_cnt <3) {
-				rle[rle_cnt++] = old;
-				rle_bits++;
-				if (old_cnt == 2)
-					rle[rle_cnt++] = old, rle_bits++;
+			if (old_cnt * GRAYSCALE_BITS < GRAYSCALE_BITS + 4 + RLE_MAX) {
+				for (j = 0; j < old_cnt; j++) {
+					rle[rle_cnt++] = old;
+					rle_bits += GRAYSCALE_BITS;
+				}
 			} else {
 				rle[rle_cnt++] = 0;
 				rle[rle_cnt++] = old;
@@ -32,6 +34,22 @@ int rle_encode(int *luma, int w, int h) {
 	}
 
 	fprintf(stderr, "Raw: %i bytes, RLE: %i bytes\n", w * h * GRAYSCALE_BITS / 8, rle_bits / 8);
+}
+
+
+void smudge_compress(int *luma, int w, int h) {
+	int i, j, p, r;
+
+	for (i = 0; i < h; i++) {
+		for (j = 2; j < w; j++) {
+			p = luma[w * i + j - 2];
+			r = luma[w * i + j];
+			if (abs(p - r) < LUMA_SMUDGE_DIFF)
+				luma[w * i + j - 1] = luma[w * i + j - 2];
+		}
+	}
+
+	return;
 }
 
 
@@ -51,6 +69,7 @@ int main(int argc, char **argv) {
 		luma[i] = ((imgdat.data[i] & 0xFF) * 64 / 256 + ((imgdat.data[i] & 0xFF00) >> 8) * 128 / 256 + ((imgdat.data[i] & 0xFF0000) >> 16) * 24 / 256 + 16) & ~(0xFF >> GRAYSCALE_BITS);
 	}
 
+	smudge_compress(luma, imgdat.w, imgdat.h);
 	rle_encode(luma, imgdat.w, imgdat.h);
 	
 	/* Convert image to R2GB3 for reference */
