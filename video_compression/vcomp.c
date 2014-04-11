@@ -5,7 +5,7 @@
 #define	RLE_MAX		5
 #define	WIDTH		640
 #define	HEIGHT		480
-#define	LUMA_SMUDGE_DIFF	10
+#define	LUMA_SMUDGE_DIFF	20
 #define	abs(x)		(((x) < 0) ? (-(x)) : (x))
 
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 	luma = malloc(sizeof(int) * imgdat.w * imgdat.h);
 
 	for (i = 0; i < imgdat.w*imgdat.h; i++) {
-		luma[i] = ((imgdat.data[i] & 0xFF) * 64 / 256 + ((imgdat.data[i] & 0xFF00) >> 8) * 128 / 256 + ((imgdat.data[i] & 0xFF0000) >> 16) * 24 / 256 + 16) & ~(0xFF >> GRAYSCALE_BITS);
+		luma[i] = ((imgdat.data[i] & 0xFF) * 64 / 256 + ((imgdat.data[i] & 0xFF00) >> 8) * 128 / 256 + ((imgdat.data[i] & 0xFF0000) >> 16) * 16 / 256 + 16) & ~(0xFF >> GRAYSCALE_BITS);
 	}
 
 	smudge_compress(luma, imgdat.w, imgdat.h);
