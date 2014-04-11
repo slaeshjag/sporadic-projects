@@ -5,7 +5,7 @@
 #define	RLE_MAX		5
 #define	WIDTH		640
 #define	HEIGHT		480
-#define	LUMA_SMUDGE_DIFF	20
+#define	LUMA_SMUDGE_DIFF	10
 #define	abs(x)		(((x) < 0) ? (-(x)) : (x))
 
 
@@ -24,7 +24,7 @@ int rle_encode(int *luma, int w, int h) {
 				rle[rle_cnt++] = 0;
 				rle[rle_cnt++] = old;
 				rle[rle_cnt++] = old_cnt;
-				rle_bits += GRAYSCALE_BITS + 4 + RLE_MAX;
+				rle_bits += GRAYSCALE_BITS + 3 + RLE_MAX;
 			}
 
 			old = luma[i];
@@ -53,6 +53,7 @@ void smudge_compress(int *luma, int w, int h) {
 }
 
 
+/* NOTE: Add 16 on the client side, removed it for more efficient RLE */
 int main(int argc, char **argv) {
 	DARNIT_IMAGE_DATA imgdat;
 	DARNIT_TILESHEET *ts;
@@ -66,7 +67,7 @@ int main(int argc, char **argv) {
 	luma = malloc(sizeof(int) * imgdat.w * imgdat.h);
 
 	for (i = 0; i < imgdat.w*imgdat.h; i++) {
-		luma[i] = ((imgdat.data[i] & 0xFF) * 64 / 256 + ((imgdat.data[i] & 0xFF00) >> 8) * 128 / 256 + ((imgdat.data[i] & 0xFF0000) >> 16) * 16 / 256 + 16) & ~(0xFF >> GRAYSCALE_BITS);
+		luma[i] = ((imgdat.data[i] & 0xFF) * 64 / 256 + ((imgdat.data[i] & 0xFF00) >> 8) * 128 / 256 + ((imgdat.data[i] & 0xFF0000) >> 16) * 16 / 256) & ~(0xFF >> GRAYSCALE_BITS);
 	}
 
 	smudge_compress(luma, imgdat.w, imgdat.h);
