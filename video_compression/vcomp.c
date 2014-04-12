@@ -69,7 +69,9 @@ void smudge_compress(int *luma, int w, int h) {
 	int i, j, p, r;
 
 	for (i = 0; i < h; i++) {
-		for (j = 2; j < w; j++) {
+		for (j = 0; j < w; j++) {
+			if (j < 2 && !i)
+				continue;
 			p = luma[w * i + j - 2];
 			r = luma[w * i + j];
 			if (abs(p - r) < LUMA_SMUDGE_DIFF)
