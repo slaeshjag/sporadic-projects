@@ -1,15 +1,21 @@
 #include <darnit/darnit.h>
 #include <GL/gl.h>
 
-#define	GRAYSCALE_BITS	6
-#define	RLE_MAX		5
-#define	WIDTH		640
-#define	HEIGHT		480
-#define	LUMA_SMUDGE_DIFF	10
-#define	abs(x)		(((x) < 0) ? (-(x)) : (x))
 
 static int residual_bits = 0;
 static int residual_bits_cnt = 0;
+/* Defaults */
+static int grayscale_bits = 6;
+static int rle_max = 5;
+static int luma_smudge_diff = 10;
+
+#define	GRAYSCALE_BITS	grayscale_bits
+#define	RLE_MAX		rle_max
+#define	WIDTH		640
+#define	HEIGHT		480
+#define	LUMA_SMUDGE_DIFF	luma_smudge_diff
+#define	abs(x)		(((x) < 0) ? (-(x)) : (x))
+
 
 void push_bits(FILE *fp, int bits, int bits_cnt) {
 
@@ -39,7 +45,7 @@ int rle_encode(int *luma, int w, int h, FILE *fp) {
 	for (i = old = rle_bits = old_cnt = 0; i < w * h; i++) {
 		if (luma[i] == old && old_cnt < (1 << RLE_MAX));
 		else {
-			if (old_cnt * GRAYSCALE_BITS < GRAYSCALE_BITS + 4 + RLE_MAX) {
+			if (old_cnt * GRAYSCALE_BITS < GRAYSCALE_BITS + 3 + RLE_MAX) {
 				for (j = 0; j < old_cnt; j++) {
 					push_bits(fp, old, GRAYSCALE_BITS);
 				}
@@ -84,6 +90,13 @@ int main(int argc, char **argv) {
 	FILE *out;
 
 	d_init_custom("Image compression test", WIDTH, HEIGHT, 0, "imgcompr", NULL);
+	if (argc >= 3)
+		grayscale_bits = atoi(argv[2]);
+	if (argc >= 4)
+		rle_max = atoi(argv[3]);
+	if (argc >= 5)
+		luma_smudge_diff = atoi(argv[4]);
+		
 
 	imgdat = d_img_load_raw(argv[1]);
 	ts = d_render_tilesheet_new(1, 1, imgdat.w, imgdat.h, DARNIT_PFORMAT_RGBA8);
