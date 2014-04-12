@@ -8,23 +8,45 @@
 #define	LUMA_SMUDGE_DIFF	10
 #define	abs(x)		(((x) < 0) ? (-(x)) : (x))
 
+static int residual_bits = 0;
+static int residual_bits_cnt = 0;
 
-int rle_encode(int *luma, int w, int h) {
-	int rle_cnt, rle[w*h], i, old, old_cnt, rle_bits, j;
+void push_bits(FILE *fp, int bits, int bits_cnt) {
 
-	for (i = old = rle_cnt = rle_bits = old_cnt = 0; i < w * h; i++) {
+	bits &= (0xFFFF >> (16 - bits_cnt));
+	residual_bits |= (bits << residual_bits_cnt);
+	residual_bits_cnt += bits_cnt;
+	while (residual_bits_cnt >= 8) {
+		fwrite(&residual_bits, 1, 1, fp);
+		residual_bits >>= 8;
+		residual_bits_cnt -= 8;
+	}
+}
+
+
+void flush_bits(FILE *fp) {
+	while (residual_bits_cnt > 0) {
+		fwrite(&residual_bits, 1, 1, fp);
+		residual_bits >>= 8;
+		residual_bits_cnt -= 8;
+	}
+}
+	
+
+int rle_encode(int *luma, int w, int h, FILE *fp) {
+	int i, old, old_cnt, rle_bits, j;
+
+	for (i = old = rle_bits = old_cnt = 0; i < w * h; i++) {
 		if (luma[i] == old && old_cnt < (1 << RLE_MAX));
 		else {
 			if (old_cnt * GRAYSCALE_BITS < GRAYSCALE_BITS + 4 + RLE_MAX) {
 				for (j = 0; j < old_cnt; j++) {
-					rle[rle_cnt++] = old;
-					rle_bits += GRAYSCALE_BITS;
+					push_bits(fp, old, GRAYSCALE_BITS);
 				}
 			} else {
-				rle[rle_cnt++] = 0;
-				rle[rle_cnt++] = old;
-				rle[rle_cnt++] = old_cnt;
-				rle_bits += GRAYSCALE_BITS + 3 + RLE_MAX;
+				push_bits(fp, 0xFF, 3);
+				push_bits(fp, old, GRAYSCALE_BITS);
+				push_bits(fp, old_cnt, RLE_MAX);
 			}
 
 			old = luma[i];
@@ -58,20 +80,24 @@ int main(int argc, char **argv) {
 	DARNIT_IMAGE_DATA imgdat;
 	DARNIT_TILESHEET *ts;
 	int *luma;
-	int i, old, cnt;
+	int i;
+	FILE *out;
 
 	d_init_custom("Image compression test", WIDTH, HEIGHT, 0, "imgcompr", NULL);
 
 	imgdat = d_img_load_raw(argv[1]);
 	ts = d_render_tilesheet_new(1, 1, imgdat.w, imgdat.h, DARNIT_PFORMAT_RGBA8);
 	luma = malloc(sizeof(int) * imgdat.w * imgdat.h);
+	out = fopen("rle_encode.dat", "w");
 
 	for (i = 0; i < imgdat.w*imgdat.h; i++) {
 		luma[i] = ((imgdat.data[i] & 0xFF) * 64 / 256 + ((imgdat.data[i] & 0xFF00) >> 8) * 128 / 256 + ((imgdat.data[i] & 0xFF0000) >> 16) * 16 / 256) & ~(0xFF >> GRAYSCALE_BITS);
 	}
 
 	smudge_compress(luma, imgdat.w, imgdat.h);
-	rle_encode(luma, imgdat.w, imgdat.h);
+	rle_encode(luma, imgdat.w, imgdat.h, out);
+	flush_bits(out);
+	fclose(out);
 	
 	/* Convert image to R2GB3 for reference */
 	for (i = 0; i < imgdat.w * imgdat.h; i++)
