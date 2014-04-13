@@ -87,6 +87,7 @@ void smudge_compress(int *luma, int w, int h) {
 int main(int argc, char **argv) {
 	DARNIT_IMAGE_DATA imgdat;
 	DARNIT_TILESHEET *ts;
+	DARNIT_TILE *t;
 	int *luma;
 	int i;
 	FILE *out;
@@ -102,6 +103,12 @@ int main(int argc, char **argv) {
 
 	imgdat = d_img_load_raw(argv[1]);
 	ts = d_render_tilesheet_new(1, 1, imgdat.w, imgdat.h, DARNIT_PFORMAT_RGBA8);
+
+	t = d_render_tile_new(1, ts);
+	d_render_tile_move(t, 0, 0, 0);
+	d_render_tile_set(t, 0, 0);
+	d_render_tile_size_set(t, 0, WIDTH, HEIGHT);
+
 	luma = malloc(sizeof(int) * imgdat.w * imgdat.h);
 	out = fopen("rle_encode.dat", "w");
 
@@ -122,8 +129,8 @@ int main(int argc, char **argv) {
 	for (;;) {
 		d_render_begin();
 		
-		d_render_tile_blit(ts, 0, 0, 0);
-		
+		d_render_tile_draw(t, 1);
+
 		d_loop();
 		d_render_end();
 	}
