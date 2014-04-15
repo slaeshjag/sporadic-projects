@@ -6,7 +6,7 @@ static int residual_bits = 0;
 static int residual_bits_cnt = 0;
 /* Defaults */
 static int grayscale_bits = 6;
-static int rle_max = 5;
+static int rle_max = 6;
 static int luma_smudge_diff = 10;
 
 #define	GRAYSCALE_BITS	grayscale_bits
@@ -15,6 +15,20 @@ static int luma_smudge_diff = 10;
 #define	HEIGHT		480
 #define	LUMA_SMUDGE_DIFF	luma_smudge_diff
 #define	abs(x)		(((x) < 0) ? (-(x)) : (x))
+
+
+struct frame_preamble {
+	/* 0x0 = R5G6B5, 0x1 = 6b gray, 0x2 = 5b gray */
+	int		bit_resolution	: 2;
+	/* 0x0 = 160, 0x1 = 320, 0x2 = 480, 0x3 = 640 */
+	int		horiz_res	: 2;
+	/* 0x0 = 120, 0x1 = 240, 0x2 = 320, 0x3 = 480 */
+	int		vert_res	: 2;
+	/* 0x0 if continuation, 0x1 if new frame */
+	int		frame_cont	: 1;
+
+	int		padding		: 1;
+} __attribute__((packed));
 
 
 void push_bits(FILE *fp, int bits, int bits_cnt) {
@@ -103,6 +117,7 @@ int main(int argc, char **argv) {
 
 	imgdat = d_img_load_raw(argv[1]);
 	ts = d_render_tilesheet_new(1, 1, imgdat.w, imgdat.h, DARNIT_PFORMAT_RGBA8);
+	d_render_tilesheet_scale_algorithm(ts, DARNIT_SCALE_LINEAR);
 
 	t = d_render_tile_new(1, ts);
 	d_render_tile_move(t, 0, 0, 0);
