@@ -1,0 +1,16 @@
+#ifndef __MAP_H__
+#define	__MAP_H__
+
+#include <darnit/darnit.h>
+
+struct map_s {
+	const char			*current_map;
+	DARNIT_MAP			*map;
+};
+
+void map_init();
+void map_reset();
+void map_load(const char *map);
+void map_draw();
+
+#endif
