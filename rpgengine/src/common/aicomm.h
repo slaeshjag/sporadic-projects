@@ -139,6 +139,8 @@ struct character_entry {
 
 	struct item_reply_element	*item_reply;
 	int			item_replies;
+
+	int			map_id;
 };
 
 #endif

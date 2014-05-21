@@ -6,6 +6,12 @@
 struct map_s {
 	const char			*current_map;
 	DARNIT_MAP			*map;
+
+	struct {
+		int32_t			cam_x;
+		int32_t			cam_y;
+		int			follow;
+	} cam;
 };
 
 void map_init();
