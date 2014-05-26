@@ -56,7 +56,7 @@ struct aicomm_struct {
 	int			arg[8];
 	void			*argp;
 	int			from;
-	struct character_entry	**ce;
+	struct character_entry	*ce;
 	int			self;
 };
 
@@ -105,9 +105,7 @@ struct character_entry {
 	int			x;
 	int			y;
 	int			l;
-	int			map;
 	int			dir;
-	int			slot;
 	int			self;
 
 	/* In fix-pint 24.8 pixels/s */
@@ -121,6 +119,7 @@ struct character_entry {
 		unsigned int	animate		: 1;
 		unsigned int	solid		: 1;
 		unsigned int	invisible	: 1;
+		unsigned int	nodespawn	: 1;
 	} special_action;
 
 	/* Stats, implement! */
