@@ -30,11 +30,11 @@ static void player_init(struct aicomm_struct ac, struct player_state *ps) {
 	engine_api_request_preload(ps->msg, "res/testsprite.mts", CHARACTER_RES_ANIMATION, 0, 0, self);
 	engine_api_preload_unload(ps->msg, "res/testsprite.mts", self);
 
-	ac.ce[ac.self]->stat = malloc(sizeof(*ac.ce[ac.self]->stat) * CHAR_STAT_TOTAL);
-	ac.ce[ac.self]->stats = CHAR_STAT_TOTAL - 1;
-	player_init_stats(ac.ce[ac.self]);
+	ac.ce[ac.self].stat = malloc(sizeof(*ac.ce[ac.self].stat) * CHAR_STAT_TOTAL);
+	ac.ce[ac.self].stats = CHAR_STAT_TOTAL - 1;
+	player_init_stats(&ac.ce[ac.self]);
 
-	ac.ce[self]->special_action.solid = 1;
+	ac.ce[self].special_action.solid = 1;
 
 	return;
 }
@@ -49,15 +49,15 @@ static void player_handle_send(struct aicomm_struct ac, struct player_state *ps)
 
 	/* Get progress */
 	if (ac.arg[0] == 1) {
-		if (ac.arg[1] >= (signed) ac.ce[ac.self]->save.is || ac.arg[1] < 0)
+		if (ac.arg[1] >= (signed) ac.ce[ac.self].save.is || ac.arg[1] < 0)
 			ac.arg[0] = 0;
 		else
-			ac.arg[0] = ac.ce[ac.self]->save.i[ac.arg[1]];
+			ac.arg[0] = ac.ce[ac.self].save.i[ac.arg[1]];
 	} else if (ac.arg[0] == 2) {	/* Set progress */
-		if (ac.arg[1] >= (signed) ac.ce[ac.self]->save.is || ac.arg[1] < 0)
+		if (ac.arg[1] >= (signed) ac.ce[ac.self].save.is || ac.arg[1] < 0)
 			ac.arg[0] = 0;
 		else {
-			ac.ce[ac.self]->save.i[ac.arg[1]] = ac.arg[2];
+			ac.ce[ac.self].save.i[ac.arg[1]] = ac.arg[2];
 			ac.arg[0] = ac.arg[2];
 		}
 	} else 
@@ -80,42 +80,42 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 
 	keys = d_keys_get();
 
-	ac.ce[self]->dx = ac.ce[self]->dy = 0;
+	ac.ce[self].dx = ac.ce[self].dy = 0;
 	n = -1;
 	if (ps->freeze)
 		goto nomove;
 	if (keys.left) {
-		ac.ce[self]->dx = PLAYER_SPEED * -1;
-		ac.ce[self]->dir = 0;
+		ac.ce[self].dx = PLAYER_SPEED * -1;
+		ac.ce[self].dir = 0;
 		n = 0;
 	}
 	
 	if (keys.right) {
-		ac.ce[self]->dx = PLAYER_SPEED;
-		ac.ce[self]->dir = 2;
+		ac.ce[self].dx = PLAYER_SPEED;
+		ac.ce[self].dir = 2;
 		n = 0;
 	}
 	
 	if (keys.up) {
-		ac.ce[self]->dir = 1;
-		ac.ce[self]->dy = PLAYER_SPEED * -1;
+		ac.ce[self].dir = 1;
+		ac.ce[self].dy = PLAYER_SPEED * -1;
 		n = 0;
 	}
 	
 	if (keys.down) {
-		ac.ce[self]->dir = 3;
-		ac.ce[self]->dy = PLAYER_SPEED;
+		ac.ce[self].dir = 3;
+		ac.ce[self].dy = PLAYER_SPEED;
 		n = 0;
 	}
 
 	if (keys.select)
-		engine_api_spawn(ps->msg, ac.self, 0, (ac.ce[ac.self]->x >> 8) / 32 - 2,
-			(ac.ce[ac.self]->y >> 8) / 32 - 2, ac.ce[ac.self]->l, "box_ai");
+		engine_api_spawn(ps->msg, ac.self, 0, (ac.ce[ac.self].x >> 8) / 32 - 2,
+			(ac.ce[ac.self].y >> 8) / 32 - 2, ac.ce[ac.self].l, "box_ai");
 
 
 	if (keys.y) {
-		engine_api_text_effect(ps->msg, ac.self, 2000, (ac.ce[ac.self]->x >> 8) + 16,
-			(ac.ce[ac.self]->y >> 8) - 64, 400, 255, 127, 127, "Fiskmåsar i sjön\n+10 XP");
+		engine_api_text_effect(ps->msg, ac.self, 2000, (ac.ce[ac.self].x >> 8) + 16,
+			(ac.ce[ac.self].y >> 8) - 64, 400, 255, 127, 127, "Fiskmåsar i sjön\n+10 XP");
 		d_keys_set(d_keys_get());
 	}
 
@@ -132,14 +132,14 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 	nomove:
 	
 	if (n < 0) {
-		if (ac.ce[self]->special_action.animate) {
-			ac.ce[self]->special_action.animate = 0;
+		if (ac.ce[self].special_action.animate) {
+			ac.ce[self].special_action.animate = 0;
 			engine_api_direction_update(ps->msg, ac.self);
 			return;
 		}
 	}
 
-	ac.ce[self]->special_action.animate = 1;
+	ac.ce[self].special_action.animate = 1;
 
 	return;
 }
@@ -150,38 +150,38 @@ struct aicomm_struct player_ai(struct aicomm_struct ac) {
 	int argv[8];
 
 	if (ac.msg == AICOMM_MSG_INIT) {
-		ac.ce[ac.self]->state = malloc(sizeof(struct player_state));
-		ps = ac.ce[ac.self]->state;
+		ac.ce[ac.self].state = malloc(sizeof(struct player_state));
+		ps = ac.ce[ac.self].state;
 		ps->init = 0;
 		ps->freeze = 0;
 		player_init(ac, ps);
 	} else if (ac.msg == AICOMM_MSG_LOOP) {
-		player_loop(ac, ac.ce[ac.self]->state);
+		player_loop(ac, ac.ce[ac.self].state);
 	} else if (ac.msg == AICOMM_MSG_MAPE) {
-		ps = ac.ce[ac.self]->state;
+		ps = ac.ce[ac.self].state;
 		if (ac.arg[1] & MAP_FLAG_TELEPORT) {
 			engine_api_teleport_table(ps->msg, ac.self, ((unsigned) ac.arg[1]) >> 14);
 			aicom_msgbuf_push(ps->msg, ac);
 		}
 	} else if (ac.msg == AICOMM_MSG_SILE) {
-		ps = ac.ce[ac.self]->state;
+		ps = ac.ce[ac.self].state;
 		ps->freeze = ac.arg[0];
 		ac.from = ac.self;
 	} else if (ac.msg == AICOMM_MSG_SEND) {
-		player_handle_send(ac, ac.ce[ac.self]->state);
+		player_handle_send(ac, ac.ce[ac.self].state);
 	} else if (ac.msg == AICOMM_MSG_GETF) {
-		ps = ac.ce[ac.self]->state;
+		ps = ac.ce[ac.self].state;
 		argv[0] = 0;
 		engine_api_send(ps->msg, ac.self, ac.from, NULL, argv, 1);
 	} else if (ac.msg == AICOMM_MSG_DESTROY) {
-		ps = ac.ce[ac.self]->state;
+		ps = ac.ce[ac.self].state;
 		aicom_msgbuf_free(ps->msg);
 		free(ps);
 		ac.msg = AICOMM_MSG_DONE;
 		return ac;
 	}
 
-	ps = ac.ce[ac.self]->state;
+	ps = ac.ce[ac.self].state;
 
 	return aicom_msgbuf_pop(ps->msg);
 }

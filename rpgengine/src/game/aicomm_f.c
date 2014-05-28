@@ -1,10 +1,17 @@
-#include "character.h"
+#include "object.h"
 #include "aicomm_f.h"
 #include "savefile.h"
-#include "textbox.h"
+//#include "textbox.h"
 #include "world.h"
 #include <string.h>
 
+#define	CHECK_FROM_VALID	\
+	if (ac.from < 0 || ac.from >= OBJECT_MAX || !world.map.object.entry[ac.from].loop) {	\
+		ac.msg = AICOMM_MSG_NOAI;							\
+		ac.self = ac.from;								\
+		ac.from = -1;									\
+		return ac;									\
+	}											
 
 int character_get_character_looked_at(int src);
 struct aicomm_struct character_message_next(struct aicomm_struct ac);
@@ -13,49 +20,29 @@ void character_despawn(int entry);
 
 
 struct aicomm_struct aicomm_f_diru(struct aicomm_struct ac) {
-	if (ac.from < 0 || ac.from >= ws.char_data->max_entries ||
-	    !ws.char_data->entry[ac.from]) {
-		ac.msg = AICOMM_MSG_NOAI;
-		ac.self = ac.from;
-		ac.from = -1;
-		return ac;
-	}
+	CHECK_FROM_VALID;
 
-	character_update_sprite(ac.from);
-	return character_message_next(ac);
+	object_update_sprite(ac.from);
+	return object_message_next(ac);
 }
 
 
 struct aicomm_struct aicomm_f_nspr(struct aicomm_struct ac) {
-	if (ac.from < 0 || ac.from >= ws.char_data->max_entries ||
-	    !ws.char_data->entry[ac.from]) {
-		ac.msg = AICOMM_MSG_NOAI;
-		ac.self = ac.from;
-		ac.from = -1;
-		return ac;
-	}
+	CHECK_FROM_VALID;
 
-	d_sprite_free(ws.char_data->entry[ac.from]->sprite);
-	character_unload_graphics(ws.char_data->entry[ac.from]->slot);
-	ws.char_data->entry[ac.from]->slot = ac.arg[0];
-	character_load_graphics(ws.char_data->entry[ac.from]->slot);
-	character_enable_graphics(ac.from);
-	character_update_sprite(ac.from);
+	d_sprite_free(world.map.object.entry[ac.from].sprite);
+	object_load_sprite(ac.from, ac.argp);
 
-	return character_message_next(ac);
+	return object_message_next(ac);
 }
 
 
 struct aicomm_struct aicomm_f_tpme(struct aicomm_struct ac) {
 	struct savefile_teleport_entry t;
+
+	CHECK_FROM_VALID;
 	
-	if (ac.arg[0] >= (signed) ws.char_data->teleport.entries) {
-		ac.self = ac.from;
-		ac.from = -1;
-		ac.msg = AICOMM_MSG_INVM;
-		return ac;
-	}
-	
+	#if 0
 	/* TODO: Add teleport ID offset */
 	t = ws.char_data->teleport.entry[ac.arg[0]];
 
@@ -75,50 +62,56 @@ struct aicomm_struct aicomm_f_tpme(struct aicomm_struct ac) {
 	ws.char_data->teleport.to.l = t.l;
 	ac.ce[ac.from]->map = t.map;
 	ws.char_data->teleport.to.dungeon = t.map;
+	#else
+	fprintf(stderr, "STUB: aicomm_f_tpme()\n");
+	#endif
 
-	return character_message_next(ac);
+	return object_message_next(ac);
 }
 
 
 struct aicomm_struct aicomm_f_folm(struct aicomm_struct ac) {
-	ws.camera.follow_char = ac.from;
+	world.map.cam.follow = ac.from;
 	ac.self = ac.from;
 	ac.from = -1;
 	ac.msg = AICOMM_MSG_NEXT;
 
-	return character_message_next(ac);
+	return object_message_next(ac);
 }
 
 
 struct aicomm_struct aicomm_f_setp(struct aicomm_struct ac) {
-	ws.camera.player = ac.self;
+	world.map.cam.player = ac.self;
 
-	return character_message_next(ac);
+	return object_message_next(ac);
 }
 
 
 struct aicomm_struct aicomm_f_getp(struct aicomm_struct ac) {
 	ac.self = ac.from;
-	ac.from = ws.camera.player;
+	ac.from = world.map.cam.player;
 	
 	return ac;
 }
 
 
 struct aicomm_struct aicomm_f_kill(struct aicomm_struct ac) {
-	character_despawn(ac.self);
-	return character_message_next(ac);
+	object_despawn(ac.self);
+	return object_message_next(ac);
 }
 
 
 struct aicomm_struct aicomm_f_spwn(struct aicomm_struct ac) {
 	int x, y;
-
+#if 0
 	x = ac.arg[1] * ws.camera.tile_w;
 	y = ac.arg[2] * ws.camera.tile_h;
-	character_spawn_entry(ac.arg[0], ac.argp, x, y, ac.arg[3], ws.dm->grid[4].id, -1);
+	object_spawn_entry(ac.arg[0], ac.argp, x, y, ac.arg[3], ws.dm->grid[4].id, -1);
+#else
+	fprintf(stderr, "STUB: aicomm_f_spwn\n");
+#endif
 
-	return character_message_next(ac);
+	return object_message_next(ac);
 }
 
 
@@ -131,9 +124,9 @@ struct aicomm_struct aicomm_f_getf(struct aicomm_struct ac) {
 
 
 struct aicomm_struct aicomm_f_camn(struct aicomm_struct ac) {
-	ws.camera.jump = 1;
+	//ws.camera.jump = 1;
 
-	return character_message_next(ac);
+	return object_message_next(ac);
 }
 
 
@@ -143,7 +136,7 @@ struct aicomm_struct aicomm_f_tbox(struct aicomm_struct ac) {
 	tp = ac.argp;
 	if (tp)
 		textbox_add_message(tp->message, tp->question, ac.arg[0], ac.from);
-	return character_message_next(ac);
+	return object_message_next(ac);
 }
 
 

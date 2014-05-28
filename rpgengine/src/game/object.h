@@ -16,5 +16,6 @@ struct object_s {
 void object_init();
 void object_reset();
 void object_refresh();
+struct aicomm_struct object_message_next(struct aicomm_struct ac);
 
 #endif

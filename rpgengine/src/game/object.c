@@ -147,6 +147,50 @@ void object_message_loop(struct aicomm_struct ac) {
 }
 
 
+struct aicomm_struct object_message_next(struct aicomm_struct ac) {
+	ac.self = ac.from;
+	ac.from = -1;
+	ac.msg = AICOMM_MSG_NEXT;
+
+	return ac;
+}
+
+
+void object_load_sprite(int obj, const char *path) {
+	world.map.object.entry[obj].sprite = d_sprite_load(path, 0, DARNIT_PFORMAT_RGB5A1);
+	d_sprite_activate(world.map.object.entry[obj].sprite, 0);
+	object_update_sprite(obj);
+	object_set_hitbox(obj);
+
+	return;
+}
+
+void object_despawn(int entry) {
+	struct character_entry *ce;
+	struct aicomm_struct ac;
+
+	if (entry < 0 || entry >= OBJECT_MAX)
+		return;
+
+	ce = &world.map.object.entry[entry];
+	if (!world.map.object.entry[entry].loop)
+		return;
+	
+	ac.msg = AICOMM_MSG_DESTROY;
+	ac.from = -1;
+	ac.self = entry;
+	object_message_loop(ac);
+	
+	d_sprite_free(ce->sprite);
+	world.map.object.entry[entry].loop = NULL;
+
+	if (world.map.cam.player == entry)
+		world.map.cam.player = -1;
+
+	return;
+}
+
+
 int object_spawn(int map_id) {
 	int slot;
 	struct character_entry *ce;
@@ -178,7 +222,7 @@ int object_spawn(int map_id) {
 	ac.msg = AICOMM_MSG_INIT;
 	ac.from = -1;
 	ac.self = ce->self;
-	character_message_loop(ac);
+	object_message_loop(ac);
 	
 	object_set_hitbox(slot);
 

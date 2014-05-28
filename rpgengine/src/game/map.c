@@ -31,6 +31,9 @@ void map_load(const char *map, int spawn_objects) {
 	world.map.map = d_map_unload(world.map.map);
 	world.map.current_map = map;
 	world.map.map = d_map_load(map);
+	world.map.cam.cam_x = world.map.cam.cam_y = 0;
+	world.map.cam.follow = world.map.cam.player = -1;
+	
 	if (!world.map.map) {
 		fprintf(stderr, "Unable to open map %s\n", map);
 		return;

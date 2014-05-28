@@ -13,6 +13,7 @@ struct map_s {
 		int32_t			cam_x;
 		int32_t			cam_y;
 		int			follow;
+		int			player;
 	} cam;
 };
 
