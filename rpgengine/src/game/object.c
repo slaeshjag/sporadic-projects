@@ -1,11 +1,16 @@
 #include <darnit/darnit.h>
 #include <string.h>
+#include <limits.h>
+
 #include "common/aicomm.h"
 #include "aicomm_f.h"
 #include "aicomm_handlers.h"
 #include "world.h"
 #include "object.h"
 
+
+void object_despawn(int entry);
+int object_spawn(int map_id);
 
 void object_init() {
 	char ai_name[64];
@@ -20,7 +25,14 @@ void object_init() {
 }
 
 
-void object_despawn_all() {
+/* really_all=1 -> despawn even those marked as no despawn */
+void object_despawn_all(int really_all) {
+	int i;
+
+	for (i = 0; i < OBJECT_MAX; i++) {
+		if (really_all || !world.map.object.entry[i].special_action.nodespawn)
+			object_despawn(i);
+	}
 	/* TODO: Implement */
 	return;
 }
@@ -38,7 +50,7 @@ void object_refresh() {
 	int i;
 	DARNIT_MAP *m = world.map.map;
 
-	/* TODO: Despawn objects that are not marked as no despawn */
+	object_despawn_all(0);
 	world.map.object.not_spawned = d_bbox_free(world.map.object.not_spawned);
 	world.map.object.not_spawned = d_bbox_new(m->objects);
 	d_bbox_set_indexkey(world.map.object.not_spawned);
@@ -171,6 +183,8 @@ void object_despawn(int entry) {
 
 	if (entry < 0 || entry >= OBJECT_MAX)
 		return;
+	if (!world.map.object.entry[entry].loop)
+		return;
 
 	ce = &world.map.object.entry[entry];
 	if (!world.map.object.entry[entry].loop)
@@ -180,6 +194,11 @@ void object_despawn(int entry) {
 	ac.from = -1;
 	ac.self = entry;
 	object_message_loop(ac);
+
+	if (ce->map_id >= 0) {
+		d_bbox_move(world.map.object.not_spawned, ce->map_id, ce->x << 8, ce->y << 8);
+		d_bbox_resize(world.map.object.not_spawned, ce->map_id, d_sprite_width(ce->sprite), d_sprite_height(ce->sprite));
+	}
 	
 	d_sprite_free(ce->sprite);
 	world.map.object.entry[entry].loop = NULL;
@@ -201,10 +220,15 @@ int object_spawn(int map_id) {
 	
 	ce = &world.map.object.entry[slot];
 	ce->sprite = d_sprite_load(d_map_prop(world.map.map->object[map_id].ref, "sprite"), 0, DARNIT_PFORMAT_RGB5A1);
+	d_bbox_move(world.map.object.not_spawned, ce->map_id, INT_MAX, INT_MAX);
+	d_bbox_resize(world.map.object.not_spawned, ce->map_id, -1, -1);
+	
 
 	ce->x = (world.map.map->object[slot].x * world.map.map->layer->tile_w) << 8;
 	ce->y = (world.map.map->object[slot].y * world.map.map->layer->tile_h) << 8;
 	ce->l = world.map.map->object[slot].l;
+	
+	
 	ce->dx = ce->dy = 0;
 	ce->self = slot;
 	ce->dir = 0;

@@ -27,6 +27,8 @@ void map_reset() {
 
 
 void map_load(const char *map, int spawn_objects) {
+	int cam_x, cam_y;
+
 	/* TODO: Look up real map file name */
 	world.map.map = d_map_unload(world.map.map);
 	world.map.current_map = map;
@@ -41,6 +43,15 @@ void map_load(const char *map, int spawn_objects) {
 
 	if (spawn_objects)
 		object_refresh();
+	
+	if (d_map_prop(world.map.map->prop, "cam_origin_x") && d_map_prop(world.map.map->prop, "cam_origin_y")) {
+		cam_x = atoi(d_map_prop(world.map.map->prop, "cam_origin_x")) * world.map.map->layer->tile_w, cam_y = atoi(d_map_prop(world.map.map->prop, "cam_origin_y")) * world.map.map->layer->tile_h;
+	} else
+		cam_x = 0, cam_y = 0;
+	
+	fprintf(stderr, "Using map camera coordinates %i %i\n", cam_x, cam_y);
+	world.map.cam.cam_x = cam_x, world.map.cam.cam_y = cam_y;
+		
 
 	return;
 }
@@ -54,9 +65,16 @@ void map_camera_move(int32_t center_x, int32_t center_y) {
 
 
 static void map_camera_loop() {
+	int m;
 	if (world.map.cam.follow > 0) {
 		/* TODO: calculate coordinates from object position */
 	}
+
+	m = d_bbox_test(world.map.object.not_spawned, world.map.cam.cam_x, world.map.cam.cam_y, d_platform_get().screen_w, d_platform_get().screen_h, world.map.object.buff1, OBJECT_MAX);
+	fprintf(stderr, "Found %i objects that should spawn\n", m);
+	m--;
+	for (; m >= 0; m--)
+		object_spawn(world.map.object.buff1[m]);
 
 	return;
 }

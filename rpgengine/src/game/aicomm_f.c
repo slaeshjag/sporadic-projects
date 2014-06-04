@@ -117,7 +117,8 @@ struct aicomm_struct aicomm_f_spwn(struct aicomm_struct ac) {
 
 struct aicomm_struct aicomm_f_getf(struct aicomm_struct ac) {
 	ac.self = ac.from;
-	ac.from = character_get_character_looked_at(ac.self);
+	fprintf(stderr, "STUB: aicomm_f_getf\n");
+	/*ac.from = character_get_character_looked_at(ac.self);*/
 
 	return ac;
 }
@@ -134,8 +135,11 @@ struct aicomm_struct aicomm_f_tbox(struct aicomm_struct ac) {
 	struct textbox_properties *tp;
 
 	tp = ac.argp;
+	fprintf(stderr, "STUB: aicomm_f_tbox\n");
+	#if 0
 	if (tp)
 		textbox_add_message(tp->message, tp->question, ac.arg[0], ac.from);
+	#endif
 	return object_message_next(ac);
 }
 
@@ -150,8 +154,12 @@ struct aicomm_struct aicomm_f_invm(struct aicomm_struct ac) {
 
 
 struct aicomm_struct aicomm_f_txte(struct aicomm_struct ac) {
+	#if 0
 	ac.arg[0] = texteffect_add(ac.argp, ac.arg[0], ac.arg[1], ac.arg[2], ac.arg[3], ac.arg[4], ac.arg[5], ac.arg[6]);
+	#endif
 	
+	fprintf(stderr, "STUB: aicomm_f_txte\n");
+
 	ac.self = ac.from;
 	ac.from = -1;
 	ac.msg = AICOMM_MSG_TXTE;

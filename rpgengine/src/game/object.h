@@ -10,6 +10,8 @@ struct object_s {
 	DARNIT_BBOX			*not_spawned;
 	DARNIT_BBOX			*spawned;
 	struct character_entry		entry[OBJECT_MAX];
+	unsigned int			buff1[OBJECT_MAX];
+	unsigned int			buff2[OBJECT_MAX];
 	DARNIT_DYNLIB			*ai_lib;
 };
 
