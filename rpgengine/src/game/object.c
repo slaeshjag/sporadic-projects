@@ -3,6 +3,7 @@
 #include <limits.h>
 
 #include "common/aicomm.h"
+#include "common/common.h"
 #include "aicomm_f.h"
 #include "aicomm_handlers.h"
 #include "world.h"
@@ -207,7 +208,7 @@ int object_test_map(int entry, int dx, int dy) {
 		t2 = OBJ_TO_TILE_COORD(x, y2, ce->l);
 		t3 = OBJ_TO_TILE_COORD(x2, y, ce->l);
 		t4 = OBJ_TO_TILE_COORD(x2, y2, ce->l);
-		dir = (((dy < 0) ? 0x8 : 0x2) << 16);
+		dir = (((dy < 0) ? 0x1 : 0x4) << 16);
 	} else if (!dy) {
 		y2 += (h - 1);
 		x += (dx > 0) ? w - 1 : 0;
@@ -216,7 +217,7 @@ int object_test_map(int entry, int dx, int dy) {
 		t2 = OBJ_TO_TILE_COORD(x2, y, ce->l);
 		t3 = OBJ_TO_TILE_COORD(x, y2, ce->l);
 		t4 = OBJ_TO_TILE_COORD(x2, y2, ce->l);
-		dir = (((dx < 0) ? 0x4 : 0x1) << 16);
+		dir = (((dx < 0) ? 0x8 : 0x2) << 16);
 	}
 		
 	if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0)

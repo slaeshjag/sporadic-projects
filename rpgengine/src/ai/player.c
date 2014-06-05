@@ -2,7 +2,7 @@
 #include "player.h"
 #include "aicommon.h"
 #include "engine_api.h"
-#include "savefile.h"
+#include "common.h"
 
 static DARNIT_KEYS darnit_keys;
 

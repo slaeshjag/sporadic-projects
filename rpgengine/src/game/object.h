@@ -16,6 +16,8 @@ struct object_s {
 };
 
 void object_init();
+int object_spawn(int map_id);
+void object_loop();
 void object_reset();
 void object_render_layer(int l);
 void object_refresh();
