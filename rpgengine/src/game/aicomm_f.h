@@ -17,6 +17,7 @@ struct aicomm_struct aicomm_f_camn(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_tbox(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_invm(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_txte(struct aicomm_struct ac);
-
+struct aicomm_struct aicomm_f_keys(struct aicomm_struct ac);
+struct aicomm_struct aicomm_f_skey(struct aicomm_struct ac);
 
 #endif

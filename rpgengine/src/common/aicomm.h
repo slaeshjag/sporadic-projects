@@ -33,6 +33,8 @@ enum aicomm_msg {
 	AICOMM_MSG_STAT,	/* Status changed */
 	AICOMM_MSG_PREL,	/* Preload resource */
 	AICOMM_MSG_UNLO,	/* Unload preloaded resource */
+	AICOMM_MSG_KEYS,	/* Key the result of d_keys_get() */
+	AICOMM_MSG_SKEY,	/* Run d_keys_set() on provided darnit_keys */
 	AICOMM_MSG_DESTROY,	/* Time to die! */
 
 	AICOMM_MSG_END		/* END OF LIST */

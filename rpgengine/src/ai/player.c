@@ -4,6 +4,8 @@
 #include "engine_api.h"
 #include "savefile.h"
 
+static DARNIT_KEYS darnit_keys;
+
 
 void player_init_stats(struct character_entry *ce) {
 	ce->stat[CHAR_STAT_HP].cur = 10;
@@ -78,7 +80,8 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 	int n;
 	DARNIT_KEYS keys;
 
-	keys = d_keys_get();
+	keys = darnit_keys;
+	engine_api_get_keys(ps->msg, ac.self);
 
 	ac.ce[self].dx = ac.ce[self].dy = 0;
 	n = -1;
@@ -116,7 +119,7 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 	if (keys.y) {
 		engine_api_text_effect(ps->msg, ac.self, 2000, (ac.ce[ac.self].x >> 8) + 16,
 			(ac.ce[ac.self].y >> 8) - 64, 400, 255, 127, 127, "Fiskmåsar i sjön\n+10 XP");
-		d_keys_set(d_keys_get());
+		engine_api_set_keys(ps->msg, &darnit_keys, ac.self);
 	}
 
 	if (keys.x) 
@@ -126,7 +129,7 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 
 	if (keys.BUTTON_ACCEPT) {
 		engine_api_request_faced(ps->msg, ac.self);
-		d_keys_set(d_keys_get());
+		engine_api_set_keys(ps->msg, &darnit_keys, ac.self);
 	}
 
 	nomove:
@@ -154,6 +157,7 @@ struct aicomm_struct player_ai(struct aicomm_struct ac) {
 		ps = ac.ce[ac.self].state;
 		ps->init = 0;
 		ps->freeze = 0;
+		darnit_keys = d_keys_zero();
 		player_init(ac, ps);
 	} else if (ac.msg == AICOMM_MSG_LOOP) {
 		player_loop(ac, ac.ce[ac.self].state);
@@ -173,6 +177,8 @@ struct aicomm_struct player_ai(struct aicomm_struct ac) {
 		ps = ac.ce[ac.self].state;
 		argv[0] = 0;
 		engine_api_send(ps->msg, ac.self, ac.from, NULL, argv, 1);
+	} else if (ac.msg == AICOMM_MSG_KEYS) {
+		darnit_keys = *((DARNIT_KEYS *) ac.argp);
 	} else if (ac.msg == AICOMM_MSG_DESTROY) {
 		ps = ac.ce[ac.self].state;
 		aicom_msgbuf_free(ps->msg);

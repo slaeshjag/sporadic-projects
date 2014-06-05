@@ -18,6 +18,8 @@ struct aicomm_struct character_message_next(struct aicomm_struct ac);
 void character_update_sprite(int entry);
 void character_despawn(int entry);
 
+DARNIT_KEYS d_k;
+
 
 struct aicomm_struct aicomm_f_diru(struct aicomm_struct ac) {
 	CHECK_FROM_VALID;
@@ -164,6 +166,26 @@ struct aicomm_struct aicomm_f_txte(struct aicomm_struct ac) {
 	ac.from = -1;
 	ac.msg = AICOMM_MSG_TXTE;
 
+	return ac;
+}
+
+
+struct aicomm_struct aicomm_f_keys(struct aicomm_struct ac) {
+	d_k = d_keys_get();
+	ac.self = ac.from;
+	ac.from = -1;
+	ac.msg = AICOMM_MSG_KEYS;
+	ac.argp = &d_k;
+
+	return ac;
+}
+
+
+struct aicomm_struct aicomm_f_skey(struct aicomm_struct ac) {
+	ac.self = ac.from;
+	ac.from = -1;
+	ac.msg = AICOMM_MSG_SKEY;
+	d_keys_set(*((DARNIT_KEYS *) ac.argp));
 	return ac;
 }
 

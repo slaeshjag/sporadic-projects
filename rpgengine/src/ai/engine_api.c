@@ -203,6 +203,29 @@ void engine_api_request_preload(struct ai_msgbuf *buf, const char *fname, enum c
 }
 
 
+void engine_api_get_keys(struct ai_msgbuf *buf, int from) {
+	struct aicomm_struct ac;
+	
+	ac.msg = AICOMM_MSG_KEYS;
+	ac.from = from;
+
+	aicom_msgbuf_push(buf, ac);
+	return;
+}
+
+
+void engine_api_set_keys(struct ai_msgbuf *buf, DARNIT_KEYS *keys, int from) {
+	struct aicomm_struct ac;
+	
+	ac.msg = AICOMM_MSG_SKEY;
+	ac.from = from;
+	ac.argp = keys;
+
+	aicom_msgbuf_push(buf, ac);
+	return;
+}
+
+
 void engine_api_preload_unload(struct ai_msgbuf *buf, const char *fname, int from) {
 	struct aicomm_struct ac;
 

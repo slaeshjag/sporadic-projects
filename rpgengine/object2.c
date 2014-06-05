@@ -89,118 +89,12 @@ int character_load_ai_lib(const char *fname) {
 }
 
 
-void *character_find_ai_func(const char *name) {
-	int i;
-	void *func = NULL;
-
-	for (i = 0; i < ws.char_data->ai_libs && !func; i++)
-		func = d_dynlib_get(ws.char_data->ai_lib[i].lib, name);
-	return func;
-}
-
-
-void character_init() {
-	unsigned int chars;
-	int i;
-
-	chars = character_gfx_data_characters();
-	ws.char_data = malloc(sizeof(*ws.char_data));
-	ws.char_data->characters = chars;
-	ws.char_data->gfx = calloc(sizeof(*ws.char_data->gfx) * chars, 1);
-	ws.char_data->max_entries = 8;
-	ws.char_data->entries = 0;
-	ws.char_data->entry = malloc(sizeof(*ws.char_data->entry) * ws.char_data->max_entries);
-	ws.char_data->collision = malloc(sizeof(unsigned int) * ws.char_data->max_entries);
-	ws.char_data->bbox = d_bbox_new(ws.char_data->max_entries);
-	ws.char_data->ai_lib = NULL;
-	ws.char_data->ai_libs = 0;
-	d_bbox_sortmode(ws.char_data->bbox, DARNIT_BBOX_SORT_Y);
-
-	for (i = 0; i < ws.char_data->max_entries; i++)
-		ws.char_data->entry[i] = NULL;
-	character_expand_entries();
-
-	return;
-}
-
-
-void character_destroy() {
-	unsigned int i;
-
-	for (i = 0; (signed) i < ws.char_data->max_entries; i++)
-		character_despawn(i);
-	free(ws.char_data->entry);
-	for (i = 0; i < ws.char_data->characters; i++)
-		character_unload_graphics(i);
-	for (i = 0; (signed) i < ws.char_data->ai_libs; i++) {
-		ws.char_data->ai_lib[i].lib = d_dynlib_close(ws.char_data->ai_lib[i].lib);
-		free(ws.char_data->ai_lib[i].ainame);
-	}
-
-	free(ws.char_data->ai_lib);
-	free(ws.char_data->gfx);
-	free(ws.char_data->collision);
-	d_bbox_free(ws.char_data->bbox);
-	free(ws.char_data);
-	ws.char_data = NULL;
-
-	return;
-}
-
-
 void character_tell_all(struct aicomm_struct ac) {
 	int i;
 
 	for (i = 0; i < ws.char_data->max_entries; i++)
 		ac.self = i, character_message_loop(ac);
 	return;
-}
-
-
-void character_expand_entries() {
-	int i, nz;
-
-	nz = (ws.char_data->max_entries << 1);
-	ws.char_data->entry = realloc(ws.char_data->entry, nz * sizeof(*ws.char_data->entry));
-	ws.char_data->collision = realloc(ws.char_data->collision, nz * sizeof(unsigned int));
-	for (i = 0; i < ws.char_data->max_entries; i++)
-		ws.char_data->entry[i + ws.char_data->max_entries] = NULL;
-	
-	ws.char_data->max_entries <<= 1;
-	d_bbox_free(ws.char_data->bbox);
-	ws.char_data->bbox = d_bbox_new(ws.char_data->max_entries);
-	d_bbox_sortmode(ws.char_data->bbox, DARNIT_BBOX_SORT_Y);
-
-	for (i = 0; i < ws.char_data->max_entries; i++)
-		d_bbox_add(ws.char_data->bbox, ~0, ~0, 0, 0);
-	
-	for (i = 0; i < (ws.char_data->max_entries >> 1); i++)
-		character_set_hitbox(i);
-	
-	return;
-}
-
-
-int character_load_graphics(unsigned int slot) {
-	if (slot >= ws.char_data->characters)
-		return 0;
-	if (!ws.char_data->gfx[slot])
-		ws.char_data->gfx[slot] = character_gfx_data_load(slot);
-
-	ws.char_data->gfx[slot]->link++;
-	return 1;
-}
-
-
-int character_unload_graphics(unsigned int slot) {
-	if (slot >= ws.char_data->characters)
-		return 0;
-	if (!ws.char_data->gfx[slot])
-		return 0;
-	ws.char_data->gfx[slot]->link--;
-	if (!ws.char_data->gfx[slot]->link)
-		ws.char_data->gfx[slot] = character_gfx_data_unload(ws.char_data->gfx[slot]);
-	return 1;
 }
 
 
@@ -354,110 +248,9 @@ void character_handle_movement(int entry) {
 }
 
 
-void character_enable_graphics(int entry) {
-	int i, j, k, h, slot;
-	struct char_gfx *cg;
-	struct {
-		int		tile;
-		int		time;
-	} *sprite;
-
-	slot = ws.char_data->entry[entry]->slot;
-	cg = ws.char_data->gfx[slot];
-	sprite = (void *) ws.char_data->gfx[ws.char_data->entry[entry]->slot]->sprite_data;
-	ws.char_data->entry[entry]->sprite = d_sprite_new(ws.char_data->gfx[ws.char_data->entry[entry]->slot]->sprite_ts);
-	
-	for (i = j = k = 0; sprite[i].tile != -1 || sprite[i].time != -1; i++) {
-		h = j * 4;
-		if (sprite[i].tile >= 0) {
-			d_sprite_hitbox_set(ws.char_data->entry[entry]->sprite, j, k, cg->sprite_hitbox[h], 
-			    cg->sprite_hitbox[h+1], cg->sprite_hitbox[h+2],cg->sprite_hitbox[h+3]);
-			d_sprite_frame_entry_set(ws.char_data->entry[entry]->sprite, j, k++, sprite[i].tile, sprite[i].time);
-		} else
-			j++, k = 0;
-	}
-	
-	d_sprite_activate(ws.char_data->entry[entry]->sprite, 0);
-
-	return;
-}
-
-
-void character_spawn_map(int map_slot) {
-	int i;
-	struct savefile_dungeon_object obj;
-
-	for (i = 0; i < ws.dm->grid[map_slot].objects; i++) {
-		obj = ws.dm->grid[map_slot].object[i];
-		
-		character_spawn_entry(obj.gfx_slot, obj.ai_func, obj.x * ws.camera.tile_w,
-			obj.y * ws.camera.tile_h, obj.f, ws.dm->grid[map_slot].id, obj.save_slot);
-	}
-
-	return;
-}
-
-
-void character_loop_entry(struct character_entry *ce) {
-	struct aicomm_struct ac;
-
-	ac.msg = AICOMM_MSG_LOOP;
-	ac.self = ce->self;
-	ac.from = -1;
-	character_message_loop(ac);
-	character_handle_movement(ce->self);
-
-	return;
-}
-
-
-void character_loop() {
-	int i;
-
-	for (i = 0; i < ws.char_data->max_entries; i++) {
-		if (!ws.char_data->entry[i])
-			continue;
-		character_loop_entry(ws.char_data->entry[i]);
-	}
-
-	return;
-}
-
-
-void character_despawn_map(int map) {
-	int i;
-
-	for (i = 0; i < ws.char_data->entries; i++) {
-		if (!ws.char_data->entry[i])
-			continue;
-		if (ws.char_data->entry[i]->map == ws.dm->grid[map].id)
-			character_despawn(i);
-	}
-	
-	return;
-}
-
-
 int character_find_visible() {
 	return d_bbox_test(ws.char_data->bbox, ws.camera.x - 96, ws.camera.y - 96,
 		ws.camera.screen_w + 192, ws.camera.screen_h + 192, 
 		(unsigned *) ws.char_data->collision, ws.char_data->max_entries);
 }
 	
-
-void character_render_layer(int hits, int layer) {
-	int i, e;
-
-	for (i = 0; i < hits; i++) {
-		e = ws.char_data->collision[i];
-		if (!ws.char_data->entry[e])
-			continue;
-		if (ws.char_data->entry[e]->l != layer)
-			continue;
-		if (ws.char_data->entry[e]->map != ws.dm->grid[4].id)
-			continue;
-		d_sprite_draw(ws.char_data->entry[e]->sprite);
-	}
-
-	return;
-}

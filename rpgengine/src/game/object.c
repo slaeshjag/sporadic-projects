@@ -128,7 +128,7 @@ void object_message_loop(struct aicomm_struct ac) {
 			ac.from = -1;
 			ac = world.map.object.entry[ac.from].loop(ac);
 		} else
-			ac = world.map.object.entry[ac.from].loop(ac);
+			ac = world.map.object.entry[ac.self].loop(ac);
 
 		switch (ac.msg) {
 			case AICOMM_MSG_DONE:
@@ -165,6 +165,41 @@ struct aicomm_struct object_message_next(struct aicomm_struct ac) {
 	ac.msg = AICOMM_MSG_NEXT;
 
 	return ac;
+}
+
+
+void object_loop() {
+	int i;
+	struct aicomm_struct ac;
+
+	for (i = 0; i < OBJECT_MAX; i++) {
+		if (!world.map.object.entry[i].loop)
+			continue;
+		ac.msg = AICOMM_MSG_LOOP;
+		ac.self = i;
+		ac.from = -1;
+		object_message_loop(ac);
+		//object_handle_movement(i);
+	}
+
+	return;
+}
+
+
+void object_render_layer(int l) {
+	int i;
+
+	d_render_offset(world.map.cam.cam_x, world.map.cam.cam_y);
+
+	for (i = 0; i < OBJECT_MAX; i++) {
+		if (!world.map.object.entry[i].loop)
+			continue;
+		if (world.map.object.entry[i].l != l)
+			continue;
+		d_sprite_draw(world.map.object.entry[i].sprite);
+	}
+
+	return;
 }
 
 
@@ -218,6 +253,7 @@ int object_spawn(int map_id) {
 	if ((slot = object_slot_get()) < 0)
 		return -1;
 	
+	fprintf(stderr, "Spawning object...\n");
 	ce = &world.map.object.entry[slot];
 	ce->sprite = d_sprite_load(d_map_prop(world.map.map->object[map_id].ref, "sprite"), 0, DARNIT_PFORMAT_RGB5A1);
 	d_bbox_move(world.map.object.not_spawned, ce->map_id, INT_MAX, INT_MAX);

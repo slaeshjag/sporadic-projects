@@ -71,7 +71,6 @@ static void map_camera_loop() {
 	}
 
 	m = d_bbox_test(world.map.object.not_spawned, world.map.cam.cam_x, world.map.cam.cam_y, d_platform_get().screen_w, d_platform_get().screen_h, world.map.object.buff1, OBJECT_MAX);
-	fprintf(stderr, "Found %i objects that should spawn\n", m);
 	m--;
 	for (; m >= 0; m--)
 		object_spawn(world.map.object.buff1[m]);
@@ -85,10 +84,13 @@ void map_draw() {
 
 	map_camera_loop();
 	d_map_camera_move(world.map.map, world.map.cam.cam_x, world.map.cam.cam_y);
+	object_loop();
+	d_keys_get();
 
 	/* There shouldn't be any objects on a layer above the map anyway */
 	for (i = 0; i < (int) world.map.map->layers; i++) {
 		d_tilemap_draw(world.map.map->layer[i].tilemap);
+		object_render_layer(i);
 	}
 
 	return;

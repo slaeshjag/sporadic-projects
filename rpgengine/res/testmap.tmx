@@ -47,9 +47,9 @@
  <objectgroup name="Object Layer 1" width="128" height="32">
   <object name="player" type="npc" x="832" y="128" width="32" height="32">
    <properties>
-    <property name="ai" value="player"/>
+    <property name="ai" value="player_ai"/>
     <property name="autospawn" value=""/>
-    <property name="sprite" value="res/player.spr"/>
+    <property name="sprite" value="res/baurn.spr"/>
    </properties>
   </object>
  </objectgroup>
