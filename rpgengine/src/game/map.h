@@ -4,6 +4,8 @@
 #include <darnit/darnit.h>
 #include "object.h"
 
+#define	MAP_FLAG_EVENT			0x8000000
+
 struct map_s {
 	const char			*current_map;
 	DARNIT_MAP			*map;

@@ -119,8 +119,7 @@ struct aicomm_struct aicomm_f_spwn(struct aicomm_struct ac) {
 
 struct aicomm_struct aicomm_f_getf(struct aicomm_struct ac) {
 	ac.self = ac.from;
-	fprintf(stderr, "STUB: aicomm_f_getf\n");
-	/*ac.from = character_get_character_looked_at(ac.self);*/
+	ac.from = object_get_character_looked_at(ac.self);
 
 	return ac;
 }

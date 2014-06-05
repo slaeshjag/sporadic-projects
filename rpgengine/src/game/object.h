@@ -19,6 +19,7 @@ void object_init();
 void object_reset();
 void object_render_layer(int l);
 void object_refresh();
+int object_get_character_looked_at(int src);
 struct aicomm_struct object_message_next(struct aicomm_struct ac);
 
 #endif

@@ -124,7 +124,7 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 
 	if (keys.x) 
 		engine_api_replace_sprite(ps->msg, ac.self, 2);
-	if (keys.a)
+//	if (keys.a)
 		
 
 	if (keys.BUTTON_ACCEPT) {

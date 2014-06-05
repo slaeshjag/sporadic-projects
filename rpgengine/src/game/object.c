@@ -8,9 +8,15 @@
 #include "world.h"
 #include "object.h"
 
+#define	MAP_LAYER(l)			(world.map.map->layer[(l)])
+#define	TILE_W(l)			(MAP_LAYER(l).tile_w)
+#define	TILE_H(l)			(MAP_LAYER(l).tile_h)
+#define	OBJ_TO_TILE_COORD(x, y, l)	((x)/TILE_W(l) + y/TILE_H(l) * MAP_LAYER(l).tilemap->w)
+#define	TILE(i, l)			(MAP_LAYER(l).tilemap->data[i])
 
 void object_despawn(int entry);
 int object_spawn(int map_id);
+void object_message_loop(struct aicomm_struct ac);
 
 void object_init() {
 	char ai_name[64];
@@ -63,6 +69,69 @@ void object_refresh() {
 }
 
 
+int object_get_character_looked_at(int src) {
+	int x, y, w, h, xt, yt, n, i;
+	unsigned int t[2];
+
+	if (src < 0 || src >= OBJECT_MAX)
+		return -1;
+	if (world.map.object.entry[src].loop)
+		return -1;
+	d_sprite_hitbox(world.map.object.entry[src].sprite, &x, &y, &w, &h);
+	x += (world.map.object.entry[src].x >> 8);
+	y += (world.map.object.entry[src].y >> 8);
+
+	switch (world.map.object.entry[src].dir) {
+		case 0:	/* West */
+			xt = x - (w >> 1);
+			yt = y + (h >> 1);
+			break;
+		case 1:	/* North */
+			xt = x + (w >> 1);
+			yt = y - (h >> 1);
+			break;
+		case 2:	/* East */
+			xt = x + w;
+			yt = y + (h >> 1);
+			break;
+		case 3:	/* South */
+			xt = x + (w >> 1);
+			yt = y + h;
+			break;
+		case 4: /* North-west */
+			xt = x - (w >> 1);
+			yt = y - (h >> 1);
+			break;
+		case 5:	/* North-east */
+			xt = x + w;
+			yt = y - (h >> 1);
+			break;
+		case 6:	/* South-east */
+			xt = x + w;
+			yt = y + h;
+			break;
+		case 7:	/* South-west */
+			xt = x - (w >> 1);
+			yt = y + h;
+			break;
+		default:
+			return -1;
+			break;
+	}
+
+	n = d_bbox_test(world.map.object.spawned, xt, yt, (w >> 1), (h >> 1), t, 9);
+	if (!n)
+		return -1;
+	for (i = 0; i < 2; i++) {
+		if (t[i] == (unsigned) src)
+			continue;
+		return t[i];
+	}
+	
+	return -1;
+}
+
+
 int object_slot_get() {
 	int i;
 	
@@ -109,6 +178,154 @@ void object_set_hitbox(int entry) {
 	d_bbox_move(world.map.object.spawned, entry, x, y);
 	d_bbox_resize(world.map.object.spawned, entry, (unsigned) w, (unsigned) h);
 
+	return;
+}
+
+
+int object_test_map(int entry, int dx, int dy) {
+	int x, y, w, h, x2, y2, t1, t2, t3, t4, dir, d1, d2;
+	struct character_entry *ce;
+	struct aicomm_struct ac;
+	
+	if (d_keys_get().l)
+		return 0;
+
+	ce = &world.map.object.entry[entry];
+	d_sprite_hitbox(ce->sprite, NULL, NULL, &w, &h);
+	x2 = ((ce->x + dx) >> 8);
+	y2 = ((ce->y + dy) >> 8);
+	x = (ce->x >> 8);
+	y = (ce->y >> 8);
+	if (x < 0 || x2 < 0 || y < 0 || y2 < 0)
+		return 1;
+	
+	if (!dx) {
+		x2 += (w - 1);
+		y += (dy > 0) ? h - 1 : 0;
+		y2 += (dy > 0) ? h - 1 : 0;
+		t1 = OBJ_TO_TILE_COORD(x, y, ce->l);
+		t2 = OBJ_TO_TILE_COORD(x, y2, ce->l);
+		t3 = OBJ_TO_TILE_COORD(x2, y, ce->l);
+		t4 = OBJ_TO_TILE_COORD(x2, y2, ce->l);
+		dir = (((dy < 0) ? 0x8 : 0x2) << 16);
+	} else if (!dy) {
+		y2 += (h - 1);
+		x += (dx > 0) ? w - 1 : 0;
+		x2 += (dx > 0) ? w - 1 : 0;
+		t1 = OBJ_TO_TILE_COORD(x, y, ce->l);
+		t2 = OBJ_TO_TILE_COORD(x2, y, ce->l);
+		t3 = OBJ_TO_TILE_COORD(x, y2, ce->l);
+		t4 = OBJ_TO_TILE_COORD(x2, y2, ce->l);
+		dir = (((dx < 0) ? 0x4 : 0x1) << 16);
+	}
+		
+	if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0)
+		return 1;
+	if (t1 == t2 && t3 == t4)
+		return 0;
+
+	d1 = TILE(t2, ce->l);
+	d2 = TILE(t4, ce->l);
+
+	ac.from = -1;
+	ac.msg = AICOMM_MSG_MAPE;
+	ac.self = entry;
+	if (d1 & MAP_FLAG_EVENT) {
+		ac.arg[0] = t2;
+		ac.arg[1] = d1;
+		object_message_loop(ac);
+	}
+
+	if (d2 & MAP_FLAG_EVENT) {
+		ac.arg[0] = t4;
+		ac.arg[1] = d2;
+		object_message_loop(ac);
+	}
+	
+	return ((d1 & dir) || (d2 & dir));
+}
+
+
+int object_test_collision(int entry, int dx, int dy) {
+	struct aicomm_struct ac;
+	struct character_entry *ce;
+	int x, y, w, h, e, i, s, n;
+
+	if (d_keys_get().l)
+		return 0;
+
+	ce = &world.map.object.entry[entry];
+	d_sprite_hitbox(ce->sprite, &x, &y, &w, &h);
+	x += ((ce->x + dx) >> 8);
+	y += ((ce->y + dy) >> 8);
+	n = d_bbox_test(world.map.object.spawned, x, y, w, h, (unsigned *) world.map.object.buff1, 
+		OBJECT_MAX);
+	
+	ac.msg = AICOMM_MSG_COLL;
+	ac.from = -1;
+	
+	for (i = s = 0; i < n; i++) {
+		e = world.map.object.buff1[i];
+		if (world.map.object.entry[e].l != world.map.object.entry[ce->self].l)
+			continue;
+		if (e == ce->self)
+			continue;
+		ac.arg[0] = ce->self;
+		ac.self = e;
+		object_message_loop(ac);
+		ac.arg[0] = e;
+		ac.self = ce->self;
+		object_message_loop(ac);
+		if (world.map.object.entry[entry].special_action.solid
+		    && world.map.object.entry[e].special_action.solid)
+			s = 1;
+		
+	}
+
+	return s;
+}
+
+
+void object_handle_movement(int entry) {
+	int dx, dy;
+	struct character_entry *e;
+
+	e = &world.map.object.entry[entry];
+	dx = e->dx;
+	dy = e->dy;
+
+	if (!dx && !dy)
+		return;
+
+	dx *= d_last_frame_time();
+	dy *= d_last_frame_time();
+	dx /= 1000;
+	dy /= 1000;
+
+	while (dx) {
+		if (!object_test_collision(entry, dx, 0) && !object_test_map(entry, dx, 0)) {
+			world.map.object.entry[entry].x += dx;
+			break;
+		}
+		if (!(dx / 256))
+			break;
+		dx += (dx < 0) ? 256 : -256;
+	}
+
+	while (dy) {
+		if (!object_test_collision(entry, 0, dy) && !object_test_map(entry, 0, dy)) {
+			world.map.object.entry[entry].y += dy;
+			break;
+		}
+		if (!(dy / 256))
+			break;
+		dy += (dy < 0) ? 256 : -256;
+	}
+
+	object_update_sprite(entry);
+
+	e->dx = 0, e->dy = 0;
+	
 	return;
 }
 
@@ -179,7 +396,7 @@ void object_loop() {
 		ac.self = i;
 		ac.from = -1;
 		object_message_loop(ac);
-		//object_handle_movement(i);
+		object_handle_movement(i);
 	}
 
 	return;
