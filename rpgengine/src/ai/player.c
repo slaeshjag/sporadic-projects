@@ -37,6 +37,7 @@ static void player_init(struct aicomm_struct ac, struct player_state *ps) {
 	player_init_stats(&ac.ce[ac.self]);
 
 	ac.ce[self].special_action.solid = 1;
+	ac.ce[self].special_action.nodespawn = 1;
 
 	return;
 }

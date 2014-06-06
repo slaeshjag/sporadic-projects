@@ -21,5 +21,6 @@ void map_init();
 void map_reset();
 void map_load(const char *map, int spawn_objects);
 void map_draw();
+void map_logic();
 
 #endif

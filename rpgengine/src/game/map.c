@@ -80,7 +80,6 @@ static void map_camera_loop() {
 			world.map.cam.cam_x = MAP_W_P - d_platform_get().screen_w;
 		if (world.map.cam.cam_y > (signed) MAP_H_P - (signed) d_platform_get().screen_h)
 			world.map.cam.cam_y = MAP_H_P - d_platform_get().screen_h;
-		/* TODO: calculate coordinates from object position */
 	}
 
 	if (MAP_W_P < d_platform_get().screen_w)
@@ -97,13 +96,15 @@ static void map_camera_loop() {
 }
 
 
-void map_draw() {
-	int i;
-
+void map_logic() {
 	map_camera_loop();
 	d_map_camera_move(world.map.map, world.map.cam.cam_x, world.map.cam.cam_y);
 	object_loop();
-	d_keys_get();
+}
+
+
+void map_draw() {
+	int i;
 
 	/* There shouldn't be any objects on a layer above the map anyway */
 	for (i = 0; i < (int) world.map.map->layers; i++) {
