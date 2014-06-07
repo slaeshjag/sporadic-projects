@@ -5,6 +5,7 @@
 
 struct aicomm_struct aicomm_f_dummy(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_setp(struct aicomm_struct ac);
+struct aicomm_struct aicomm_f_telp(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_tpme(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_diru(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_nspr(struct aicomm_struct ac);
@@ -19,5 +20,7 @@ struct aicomm_struct aicomm_f_invm(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_txte(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_keys(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_skey(struct aicomm_struct ac);
+struct aicomm_struct aicomm_f_prop(struct aicomm_struct ac);
+
 
 #endif

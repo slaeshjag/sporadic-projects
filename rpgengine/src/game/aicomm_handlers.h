@@ -18,10 +18,12 @@ static struct aicomm_struct(*aihandle[AICOMM_MSG_END])(struct aicomm_struct) = {
 	[AICOMM_MSG_GETF] = aicomm_f_getf,
 	[AICOMM_MSG_CAMN] = aicomm_f_camn,
 	[AICOMM_MSG_TBOX] = aicomm_f_tbox,
+	[AICOMM_MSG_TELP] = aicomm_f_telp,
 	[AICOMM_MSG_TPME] = aicomm_f_tpme,
 	[AICOMM_MSG_TXTE] = aicomm_f_txte,
 	[AICOMM_MSG_KEYS] = aicomm_f_keys,
 	[AICOMM_MSG_SKEY] = aicomm_f_skey,
+	[AICOMM_MSG_PROP] = aicomm_f_prop,
 };
 
 

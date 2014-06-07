@@ -39,12 +39,28 @@ struct aicomm_struct aicomm_f_nspr(struct aicomm_struct ac) {
 }
 
 
+struct aicomm_struct aicomm_f_telp(struct aicomm_struct ac) {
+	CHECK_FROM_VALID;
+
+	world.new_state = STATE_TELEPORTING_E;
+	world.map.teleport.id = ac.from;
+
+	/* Only compiling in gcc/mingw from now on (: */
+	world.map.teleport.map = strdup(ac.argp);
+	world.map.teleport.x = ac.arg[1];
+	world.map.teleport.y = ac.arg[2];
+	world.map.teleport.layer = ac.arg[3];
+
+	return object_message_next(ac);
+}
+
+
 struct aicomm_struct aicomm_f_tpme(struct aicomm_struct ac) {
 	struct savefile_teleport_entry t;
 
 	CHECK_FROM_VALID;
-	
 	#if 0
+	
 	/* TODO: Add teleport ID offset */
 	t = ws.char_data->teleport.entry[ac.arg[0]];
 
@@ -64,9 +80,8 @@ struct aicomm_struct aicomm_f_tpme(struct aicomm_struct ac) {
 	ws.char_data->teleport.to.l = t.l;
 	ac.ce[ac.from]->map = t.map;
 	ws.char_data->teleport.to.dungeon = t.map;
-	#else
-	fprintf(stderr, "STUB: aicomm_f_tpme()\n");
 	#endif
+	fprintf(stderr, "STUB: aicomm_f_tpme()\n");
 
 	return object_message_next(ac);
 }
@@ -83,7 +98,7 @@ struct aicomm_struct aicomm_f_folm(struct aicomm_struct ac) {
 
 
 struct aicomm_struct aicomm_f_setp(struct aicomm_struct ac) {
-	world.map.cam.player = ac.self;
+	world.map.cam.player = ac.from;
 
 	return object_message_next(ac);
 }
@@ -185,6 +200,21 @@ struct aicomm_struct aicomm_f_skey(struct aicomm_struct ac) {
 	ac.from = -1;
 	ac.msg = AICOMM_MSG_SKEY;
 	d_keys_set(*((DARNIT_KEYS *) ac.argp));
+	return ac;
+}
+
+
+struct aicomm_struct aicomm_f_prop(struct aicomm_struct ac) {
+	CHECK_FROM_VALID;
+
+	ac.self = ac.from;
+	ac.from = -1;
+	ac.msg = AICOMM_MSG_PROP;
+
+	if (world.map.object.entry[ac.self].map_id < 0)
+		ac.argp = NULL;
+	else
+		ac.argp = (void *) d_map_prop(world.map.map->object[world.map.object.entry[ac.self].map_id].ref, ac.argp);
 	return ac;
 }
 

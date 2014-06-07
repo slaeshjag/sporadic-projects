@@ -22,6 +22,8 @@ void object_message_loop(struct aicomm_struct ac);
 void object_init() {
 	char ai_name[64];
 	world.map.object.not_spawned = NULL;
+	world.map.object.spawned = d_bbox_new(OBJECT_MAX);
+	d_bbox_set_indexkey(world.map.object.spawned);
 	
 	/* Load AI code library */
 	sprintf(ai_name, "bin/%s.ai", d_platform_string());
@@ -37,8 +39,10 @@ void object_despawn_all(int really_all) {
 	int i;
 
 	for (i = 0; i < OBJECT_MAX; i++) {
-		if (really_all || !world.map.object.entry[i].special_action.nodespawn)
+		if (really_all || (!world.map.object.entry[i].special_action.nodespawn && world.map.teleport.id != i))
 			object_despawn(i);
+		else
+			world.map.object.entry[i].map_id = -1;
 	}
 	/* TODO: Implement */
 	return;
@@ -453,6 +457,7 @@ void object_despawn(int entry) {
 		d_bbox_resize(world.map.object.not_spawned, ce->map_id, d_sprite_width(ce->sprite), d_sprite_height(ce->sprite));
 	}
 	
+	d_bbox_delete(world.map.object.spawned, entry);
 	d_sprite_free(ce->sprite);
 	world.map.object.entry[entry].loop = NULL;
 
@@ -464,23 +469,26 @@ void object_despawn(int entry) {
 
 
 int object_spawn(int map_id) {
-	int slot;
+	int slot, x, y, w, h;
 	struct character_entry *ce;
 	struct aicomm_struct ac;
 
-	if ((slot = object_slot_get()) < 0)
+	if ((slot = d_bbox_add(world.map.object.spawned, 0, 0, 1, 1)) < 0)
 		return -1;
 	
-	fprintf(stderr, "Spawning object...\n");
+	fprintf(stderr, "Spawning object %i...\n", map_id);
 	ce = &world.map.object.entry[slot];
 	ce->sprite = d_sprite_load(d_map_prop(world.map.map->object[map_id].ref, "sprite"), 0, DARNIT_PFORMAT_RGB5A1);
 	d_bbox_move(world.map.object.not_spawned, ce->map_id, INT_MAX, INT_MAX);
-	d_bbox_resize(world.map.object.not_spawned, ce->map_id, -1, -1);
-	
+	d_bbox_resize(world.map.object.not_spawned, ce->map_id, 1, 1);
+	d_sprite_hitbox(ce->sprite, &x, &y, &w, &h);
 
 	ce->x = (world.map.map->object[slot].x * world.map.map->layer->tile_w) << 8;
 	ce->y = (world.map.map->object[slot].y * world.map.map->layer->tile_h) << 8;
+	d_bbox_move(world.map.object.spawned, slot, (ce->x >> 8) + x, (ce->y >> 8) + y);
+	d_bbox_resize(world.map.object.spawned, slot, w, h);
 	ce->l = world.map.map->object[slot].l;
+	fprintf(stderr, "Using AI %s\n",  d_map_prop(world.map.map->object[map_id].ref, "ai"));
 	
 	
 	ce->dx = ce->dy = 0;

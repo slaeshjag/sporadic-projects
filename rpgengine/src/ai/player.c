@@ -4,6 +4,8 @@
 #include "engine_api.h"
 #include "common.h"
 
+#include <string.h>
+
 static DARNIT_KEYS darnit_keys;
 
 
@@ -149,7 +151,7 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 }
 
 
-struct aicomm_struct player_ai(struct aicomm_struct ac) {
+struct aicomm_struct EXPORT_THIS player_ai(struct aicomm_struct ac) {
 	struct player_state *ps;
 	int argv[8];
 
@@ -158,7 +160,7 @@ struct aicomm_struct player_ai(struct aicomm_struct ac) {
 		ps = ac.ce[ac.self].state;
 		ps->init = 0;
 		ps->freeze = 0;
-		darnit_keys = d_keys_zero();
+		memset(&darnit_keys, 0, sizeof(darnit_keys));
 		player_init(ac, ps);
 	} else if (ac.msg == AICOMM_MSG_LOOP) {
 		player_loop(ac, ac.ce[ac.self].state);

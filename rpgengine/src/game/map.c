@@ -11,6 +11,7 @@ void map_init() {
 	world.map.map = NULL;
 	world.map.current_map = NULL;
 	world.map.object.not_spawned = NULL;
+	world.map.teleport.map = NULL;
 
 	object_init();
 

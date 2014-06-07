@@ -153,10 +153,10 @@ ac.self - The character ID to set as player
 AICOMM_MSG_TELP - Teleport
 Teleport the character to a different location
 
-arg0 - Dungeon to teleport to (-1 for overworld)
-arg1 - Map X coordinate (for dungeon, leave as -1 for entrance)
-arg2 - Map Y coordinate (for dungeon, leave as -1 for entrance)
-arg3 - The layer/floor to teleport to
+argp - Map to teleport to
+arg1 - Map X coordinate
+arg2 - Map Y coordinate
+arg3 - The layer to teleport to
 
 ======
 
@@ -194,6 +194,17 @@ ac.from - Who you are
 AICOMM_MSG_CAMN - Make camera jump to followed character
 
 ac.from - Who you are
+
+======
+
+AICOMM_MSG_PROP - Get a property for self
+
+This will look up a property set for the object in the map file.
+
+ac.from - Who you are
+ac.argp - String containing the property name to look up
+
+Returns the looked up property in ac.argp
 
 ======
 

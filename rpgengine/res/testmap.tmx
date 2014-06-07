@@ -48,11 +48,21 @@
 </data>
  </layer>
  <objectgroup name="Object Layer 1" width="128" height="32">
-  <object name="player" type="npc" x="832" y="128" width="32" height="32">
+  <object name="player" type="npc" x="512" y="160" width="32" height="32">
    <properties>
     <property name="ai" value="player_ai"/>
     <property name="autospawn" value=""/>
     <property name="sprite" value="res/baurn.spr"/>
+   </properties>
+  </object>
+  <object name="teleport" type="teleporter" x="544" y="160" width="32" height="32">
+   <properties>
+    <property name="ai" value="ai_teleporter"/>
+    <property name="sprite" value="res/baurn.spr"/>
+    <property name="teleport_layer" value="0"/>
+    <property name="teleport_map" value="res/testroom.ldmz"/>
+    <property name="teleport_x" value="5"/>
+    <property name="teleport_y" value="5"/>
    </properties>
   </object>
  </objectgroup>

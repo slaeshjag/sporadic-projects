@@ -18,6 +18,15 @@ void state_handle() {
 
 			/* Run construction */
 			switch (world.new_state) {
+				case STATE_TELEPORTING_E:
+					map_load(world.map.teleport.map, 1);
+					free(world.map.teleport.map);
+					world.map.teleport.map = NULL;
+					world.map.object.entry[world.map.teleport.id].x = (world.map.teleport.x * world.map.map->layer->tile_w) << 8;
+					world.map.object.entry[world.map.teleport.id].y = (world.map.teleport.y * world.map.map->layer->tile_h) << 8;
+					world.map.object.entry[world.map.teleport.id].l = world.map.teleport.layer;
+					world.new_state = STATE_OVERWORLD_E;
+					break;
 				default:
 					break;
 			}

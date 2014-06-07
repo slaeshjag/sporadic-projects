@@ -2,10 +2,20 @@
 #define	__MAP_H__
 
 #include <darnit/darnit.h>
+#include <stdint.h>
 #include "object.h"
 
 struct map_s {
 	const char			*current_map;
+	
+	struct {
+		char			*map;
+		int			id;
+		int			x;
+		int			y;
+		int			layer;
+	} teleport;
+
 	DARNIT_MAP			*map;
 	struct object_s			object;
 

@@ -8,7 +8,7 @@ CFLAGS		+=	-I../common
 
 all: $(OBJFILES) $(DEPENDS)
 	@echo " [ LD ] $(LIB)"
-	@$(CC) $(CFLAGS) $(OBJFILES) -o $(LIB) $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(OBJFILES) -o $(LIB) #$(LDFLAGS)
 	
 clean:
 	@echo

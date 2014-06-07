@@ -1,6 +1,12 @@
 #ifndef __AICOMMON_H__
 #define	__AICOMMON_H__
 
+#ifdef _WIN32
+#define	EXPORT_THIS	__declspec(dllexport)
+#else
+#define	EXPORT_THIS
+#endif
+
 #include "aicomm.h"
 
 enum {
