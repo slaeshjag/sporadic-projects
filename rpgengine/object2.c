@@ -28,15 +28,6 @@ int character_load_ai_lib(const char *fname) {
 }
 
 
-void character_tell_all(struct aicomm_struct ac) {
-	int i;
-
-	for (i = 0; i < ws.char_data->max_entries; i++)
-		ac.self = i, character_message_loop(ac);
-	return;
-}
-
-
 int character_find_visible() {
 	return d_bbox_test(ws.char_data->bbox, ws.camera.x - 96, ws.camera.y - 96,
 		ws.camera.screen_w + 192, ws.camera.screen_h + 192, 

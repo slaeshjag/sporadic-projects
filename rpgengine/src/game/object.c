@@ -17,7 +17,6 @@
 
 void object_despawn(int entry);
 int object_spawn(int map_id);
-void object_message_loop(struct aicomm_struct ac);
 
 void object_init() {
 	char ai_name[64];
@@ -80,8 +79,9 @@ int object_get_character_looked_at(int src) {
 
 	if (src < 0 || src >= OBJECT_MAX)
 		return -1;
-	if (world.map.object.entry[src].loop)
+	if (!world.map.object.entry[src].loop)
 		return -1;
+
 	d_sprite_hitbox(world.map.object.entry[src].sprite, &x, &y, &w, &h);
 	x += (world.map.object.entry[src].x >> 8);
 	y += (world.map.object.entry[src].y >> 8);
@@ -120,6 +120,7 @@ int object_get_character_looked_at(int src) {
 			yt = y + h;
 			break;
 		default:
+			fprintf(stderr, "Invalid direction %i\n", world.map.object.entry[src].dir);
 			return -1;
 			break;
 	}
@@ -476,19 +477,20 @@ int object_spawn(int map_id) {
 	if ((slot = d_bbox_add(world.map.object.spawned, 0, 0, 1, 1)) < 0)
 		return -1;
 	
-	fprintf(stderr, "Spawning object %i...\n", map_id);
 	ce = &world.map.object.entry[slot];
 	ce->sprite = d_sprite_load(d_map_prop(world.map.map->object[map_id].ref, "sprite"), 0, DARNIT_PFORMAT_RGB5A1);
+	ce->map_id = map_id;
 	d_bbox_move(world.map.object.not_spawned, ce->map_id, INT_MAX, INT_MAX);
 	d_bbox_resize(world.map.object.not_spawned, ce->map_id, 1, 1);
 	d_sprite_hitbox(ce->sprite, &x, &y, &w, &h);
 
-	ce->x = (world.map.map->object[slot].x * world.map.map->layer->tile_w) << 8;
-	ce->y = (world.map.map->object[slot].y * world.map.map->layer->tile_h) << 8;
+	ce->x = (world.map.map->object[map_id].x * world.map.map->layer->tile_w) << 8;
+	ce->y = (world.map.map->object[map_id].y * world.map.map->layer->tile_h) << 8;
 	d_bbox_move(world.map.object.spawned, slot, (ce->x >> 8) + x, (ce->y >> 8) + y);
 	d_bbox_resize(world.map.object.spawned, slot, w, h);
-	ce->l = world.map.map->object[slot].l;
+	ce->l = world.map.map->object[map_id].l;
 	fprintf(stderr, "Using AI %s\n",  d_map_prop(world.map.map->object[map_id].ref, "ai"));
+	fprintf(stderr, "Spawning object %i...\n", map_id);
 	
 	
 	ce->dx = ce->dy = 0;
@@ -497,7 +499,6 @@ int object_spawn(int map_id) {
 	ce->stat = NULL;
 	ce->stats = 0;
 	ce->state = NULL;
-	ce->map_id = map_id;
 	*((unsigned int *) (&ce->special_action)) = 0;
 
 	d_sprite_activate(ce->sprite, 0);
@@ -514,3 +515,26 @@ int object_spawn(int map_id) {
 
 	return slot;
 }
+
+
+void object_tell_all(struct aicomm_struct ac) {
+	int i;
+
+	for (i = 0; i < OBJECT_MAX; i++)
+		if (world.map.object.entry[i].loop)
+			ac.self = i, object_message_loop(ac);
+	return;
+}
+
+
+void object_silence_all(int silence) {
+	struct aicomm_struct ac;
+
+	ac.msg = AICOMM_MSG_SILE;
+	ac.arg[0] = silence;
+	ac.from = -1;
+	object_tell_all(ac);
+	
+	return;
+}
+	

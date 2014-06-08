@@ -65,6 +65,12 @@
     <property name="teleport_y" value="5"/>
    </properties>
   </object>
+  <object name="box" type="npc" x="928" y="256" width="32" height="32">
+   <properties>
+    <property name="ai" value="box_ai"/>
+    <property name="sprite" value="res/box.spr"/>
+   </properties>
+  </object>
  </objectgroup>
  <layer name="collision" width="128" height="32">
   <data encoding="csv">

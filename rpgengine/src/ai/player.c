@@ -5,6 +5,7 @@
 #include "common.h"
 
 #include <string.h>
+#define	ZERO_KEYS(k)		memset(&k, 0, sizeof(k));
 
 static DARNIT_KEYS darnit_keys;
 
@@ -132,7 +133,9 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 
 	if (keys.BUTTON_ACCEPT) {
 		engine_api_request_faced(ps->msg, ac.self);
-		engine_api_set_keys(ps->msg, &darnit_keys, ac.self);
+		ZERO_KEYS(keys);
+		keys.BUTTON_ACCEPT = 1;
+		engine_api_set_keys(ps->msg, &keys, ac.self);
 	}
 
 	nomove:
@@ -145,6 +148,7 @@ static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 		}
 	}
 
+	engine_api_get_keys(ps->msg, ac.self);
 	ac.ce[self].special_action.animate = 1;
 
 	return;
@@ -174,6 +178,7 @@ struct aicomm_struct EXPORT_THIS player_ai(struct aicomm_struct ac) {
 		ps = ac.ce[ac.self].state;
 		ps->freeze = ac.arg[0];
 		ac.from = ac.self;
+		ZERO_KEYS(darnit_keys);
 	} else if (ac.msg == AICOMM_MSG_SEND) {
 		player_handle_send(ac, ac.ce[ac.self].state);
 	} else if (ac.msg == AICOMM_MSG_GETF) {

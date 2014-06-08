@@ -1,6 +1,8 @@
 #include <darnit/darnit.h>
 #include "world.h"
 #include "map.h"
+#include "object.h"
+#include "textbox.h"
 
 
 void state_handle() {
@@ -25,6 +27,7 @@ void state_handle() {
 					world.map.object.entry[world.map.teleport.id].x = (world.map.teleport.x * world.map.map->layer->tile_w) << 8;
 					world.map.object.entry[world.map.teleport.id].y = (world.map.teleport.y * world.map.map->layer->tile_h) << 8;
 					world.map.object.entry[world.map.teleport.id].l = world.map.teleport.layer;
+					object_silence_all(0);
 					world.new_state = STATE_OVERWORLD_E;
 					break;
 				default:
@@ -43,15 +46,21 @@ void state_handle() {
 		case STATE_OVERWORLD_E:
 			/* NOTE TO SELF: Player control will be frozen by broadcasting MSG_SILE */
 			map_logic();
+			textbox_loop();
 			d_render_begin();
 			map_draw();
+			d_render_offset(0, 0);
+			d_render_blend_enable();
+			textbox_draw();
+			d_render_blend_disable();
 			d_render_end();
 			break;
 		default:
 			break;
 	}
-
+	
 	d_render_offset(0, 0);
+
 	
 	return;
 }
@@ -60,6 +69,7 @@ void state_handle() {
 int main(int argc, char **argv) {
 	/* We're aiming for Pyra, not pandora */
 	d_init_custom("RPGtest", 1280, 720, 0, "rpgtest", NULL);
+	//d_init_custom("RPGtest", 800, 480, 0, "rpgtest", NULL);
 	world_init();
 	world.state = STATE_DUMMY_E;
 	world.new_state = STATE_MENU_E;

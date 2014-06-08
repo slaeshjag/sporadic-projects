@@ -1,7 +1,7 @@
 #include "object.h"
 #include "aicomm_f.h"
 #include "savefile.h"
-//#include "textbox.h"
+#include "textbox.h"
 #include "world.h"
 #include <string.h>
 
@@ -42,6 +42,8 @@ struct aicomm_struct aicomm_f_nspr(struct aicomm_struct ac) {
 struct aicomm_struct aicomm_f_telp(struct aicomm_struct ac) {
 	CHECK_FROM_VALID;
 
+	if (world.new_state != STATE_TELEPORTING_E)
+		object_silence_all(1);
 	world.new_state = STATE_TELEPORTING_E;
 	world.map.teleport.id = ac.from;
 
@@ -56,7 +58,7 @@ struct aicomm_struct aicomm_f_telp(struct aicomm_struct ac) {
 
 
 struct aicomm_struct aicomm_f_tpme(struct aicomm_struct ac) {
-	struct savefile_teleport_entry t;
+	//struct savefile_teleport_entry t;
 
 	CHECK_FROM_VALID;
 	#if 0
@@ -119,7 +121,7 @@ struct aicomm_struct aicomm_f_kill(struct aicomm_struct ac) {
 
 
 struct aicomm_struct aicomm_f_spwn(struct aicomm_struct ac) {
-	int x, y;
+	//int x, y;
 #if 0
 	x = ac.arg[1] * ws.camera.tile_w;
 	y = ac.arg[2] * ws.camera.tile_h;
@@ -151,11 +153,8 @@ struct aicomm_struct aicomm_f_tbox(struct aicomm_struct ac) {
 	struct textbox_properties *tp;
 
 	tp = ac.argp;
-	fprintf(stderr, "STUB: aicomm_f_tbox\n");
-	#if 0
 	if (tp)
 		textbox_add_message(tp->message, tp->question, ac.arg[0], ac.from);
-	#endif
 	return object_message_next(ac);
 }
 
