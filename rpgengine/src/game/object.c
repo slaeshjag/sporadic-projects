@@ -208,10 +208,14 @@ static int object_test_map_x(int x, int x2, int y, int l, int h, int dir, int en
 	int tile_h, dy, t1, t2, f = 0;
 	int collide = 0;
 
+	if ((x2) / TILE_W(l) >= (unsigned) MAP_LAYER(l).tilemap->w)
+		return 1;
+
 	tile_h = world.map.map->layer[l].tile_h;
 	for (dy = 0; dy < h; dy += tile_h) {
 		test_tile:
 
+		
 		t1 = OBJ_TO_TILE_COORD(x, y + dy, l);
 		t2 = OBJ_TO_TILE_COORD(x2, y + dy, l);
 		if (t1 < 0 || t2 < 0) {
@@ -240,9 +244,12 @@ static int object_test_map_y(int x, int y, int y2, int l, int w, int dir, int en
 	int tile_w, dx, t1, t2, f = 0;
 	int collide = 0;
 
+	if ((y2) / TILE_H(l) >= (unsigned) MAP_LAYER(l).tilemap->h)
+		return 1;
 	tile_w = world.map.map->layer[l].tile_w;
 	for (dx = 0; dx < w; dx += tile_w) {
 		test_tile:
+		
 
 		t1 = OBJ_TO_TILE_COORD(x + dx, y, l);
 		t2 = OBJ_TO_TILE_COORD(x + dx, y2, l);
