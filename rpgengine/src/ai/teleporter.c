@@ -16,7 +16,7 @@ struct internal {
 };
 
 
-struct aicomm_struct EXPORT_THIS ai_teleporter(struct aicomm_struct ac) {
+struct aicomm_struct EXPORT_THIS teleporter_ai(struct aicomm_struct ac) {
 	struct internal *i;
 	int from;
 

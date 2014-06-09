@@ -35,12 +35,12 @@ void engine_api_direction_update(struct ai_msgbuf *buf, int chr) {
 	return;
 }
 
-void engine_api_replace_sprite(struct ai_msgbuf *buf, int chr, int sprite) {
+void engine_api_replace_sprite(struct ai_msgbuf *buf, int chr, char *sprite) {
 	struct aicomm_struct ac;
 
 	ac.msg = AICOMM_MSG_NSPR;
 	ac.from = chr;
-	ac.arg[0] = sprite;
+	ac.argp = sprite;
 
 	aicom_msgbuf_push(buf, ac);
 	return;

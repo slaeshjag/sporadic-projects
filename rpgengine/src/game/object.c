@@ -12,7 +12,7 @@
 #define	MAP_LAYER(l)			(world.map.map->layer[(l)])
 #define	TILE_W(l)			(MAP_LAYER(l).tile_w)
 #define	TILE_H(l)			(MAP_LAYER(l).tile_h)
-#define	OBJ_TO_TILE_COORD(x, y, l)	((x)/TILE_W(l) + y/TILE_H(l) * MAP_LAYER(l).tilemap->w)
+#define	OBJ_TO_TILE_COORD(x, y, l)	((x)/TILE_W(l) + (y)/TILE_H(l) * MAP_LAYER(l).tilemap->w)
 #define	TILE(i, l)			(MAP_LAYER(l).tilemap->data[i])
 
 void object_despawn(int entry);
@@ -188,10 +188,80 @@ void object_set_hitbox(int entry) {
 }
 
 
-int object_test_map(int entry, int dx, int dy) {
-	int x, y, w, h, x2, y2, t1, t2, t3, t4, dir, d1, d2;
-	struct character_entry *ce;
+static void object_signal_map_event(int entry, int t, int l) {
 	struct aicomm_struct ac;
+
+	ac.from = -1;
+	ac.msg = AICOMM_MSG_MAPE;
+	ac.self = entry;
+	if (TILE(t, l) & MAP_FLAG_EVENT) {
+		ac.arg[0] = t;
+		ac.arg[1] = TILE(t, l);
+		object_message_loop(ac);
+	}
+
+	return;
+}
+
+
+static int object_test_map_x(int x, int x2, int y, int l, int h, int dir, int entry) {
+	int tile_h, dy, t1, t2, f = 0;
+	int collide = 0;
+
+	tile_h = world.map.map->layer[l].tile_h;
+	for (dy = 0; dy <= h; dy += tile_h) {
+		test_tile:
+
+		t1 = OBJ_TO_TILE_COORD(x, y + dy, l);
+		t2 = OBJ_TO_TILE_COORD(x2, y + dy, l);
+		if (t1 < 0 || t2 < 0) {
+			collide = 1;
+			continue;
+		}
+		if (t1 == t2)
+			continue;
+		
+		if (TILE(t2, l) & dir)
+			collide = 1;
+		object_signal_map_event(entry, t2, l);
+	}
+
+	if (dy >= h && !f) {
+		f = 1;
+		dy = h - 1;
+		goto test_tile;
+	}
+
+	return collide;
+}
+
+
+static int object_test_map_y(int x, int y, int y2, int l, int w, int dir, int entry) {
+	int tile_w, dx, t1, t2;
+	int collide = 0;
+
+	tile_w = world.map.map->layer[l].tile_w;
+	for (dx = 0; dx <= w; dx += tile_w) {
+		t1 = OBJ_TO_TILE_COORD(x + dx, y, l);
+		t2 = OBJ_TO_TILE_COORD(x + dx, y2, l);
+		if (t1 < 0 || t2 < 0) {
+			collide = 1;
+			continue;
+		}
+		if (t1 == t2)
+			continue;
+		if (TILE(t2, l) & dir)
+			collide = 1;
+		object_signal_map_event(entry, t2, l);
+	}
+
+	return collide;
+}
+
+
+int object_test_map(int entry, int dx, int dy) {
+	int x, y, w, h, x2, y2, dir;
+	struct character_entry *ce;
 	
 	if (d_keys_get().l)
 		return 0;
@@ -204,51 +274,20 @@ int object_test_map(int entry, int dx, int dy) {
 	y = (ce->y >> 8);
 	if (x < 0 || x2 < 0 || y < 0 || y2 < 0)
 		return 1;
-	
+
+	/* TODO: FIXA */
 	if (!dx) {
-		x2 += (w - 1);
 		y += (dy > 0) ? h - 1 : 0;
 		y2 += (dy > 0) ? h - 1 : 0;
-		t1 = OBJ_TO_TILE_COORD(x, y, ce->l);
-		t2 = OBJ_TO_TILE_COORD(x, y2, ce->l);
-		t3 = OBJ_TO_TILE_COORD(x2, y, ce->l);
-		t4 = OBJ_TO_TILE_COORD(x2, y2, ce->l);
 		dir = (((dy < 0) ? 0x1 : 0x4) << 16);
+		return object_test_map_y(x, y, y2, ce->l, w, dir, entry);
 	} else if (!dy) {
-		y2 += (h - 1);
 		x += (dx > 0) ? w - 1 : 0;
 		x2 += (dx > 0) ? w - 1 : 0;
-		t1 = OBJ_TO_TILE_COORD(x, y, ce->l);
-		t2 = OBJ_TO_TILE_COORD(x2, y, ce->l);
-		t3 = OBJ_TO_TILE_COORD(x, y2, ce->l);
-		t4 = OBJ_TO_TILE_COORD(x2, y2, ce->l);
 		dir = (((dx < 0) ? 0x8 : 0x2) << 16);
+		return object_test_map_x(x, x2, y, ce->l, h, dir, entry);
 	}
-		
-	if (t1 < 0 || t2 < 0 || t3 < 0 || t4 < 0)
-		return 1;
-	if (t1 == t2 && t3 == t4)
-		return 0;
-
-	d1 = TILE(t2, ce->l);
-	d2 = TILE(t4, ce->l);
-
-	ac.from = -1;
-	ac.msg = AICOMM_MSG_MAPE;
-	ac.self = entry;
-	if (d1 & MAP_FLAG_EVENT) {
-		ac.arg[0] = t2;
-		ac.arg[1] = d1;
-		object_message_loop(ac);
-	}
-
-	if (d2 & MAP_FLAG_EVENT) {
-		ac.arg[0] = t4;
-		ac.arg[1] = d2;
-		object_message_loop(ac);
-	}
-	
-	return ((d1 & dir) || (d2 & dir));
+	return 0;
 }
 
 

@@ -32,7 +32,7 @@ struct aicomm_struct aicomm_f_diru(struct aicomm_struct ac) {
 struct aicomm_struct aicomm_f_nspr(struct aicomm_struct ac) {
 	CHECK_FROM_VALID;
 
-	d_sprite_free(world.map.object.entry[ac.from].sprite);
+	world.map.object.entry[ac.from].sprite = d_sprite_free(world.map.object.entry[ac.from].sprite);
 	object_load_sprite(ac.from, ac.argp);
 
 	return object_message_next(ac);

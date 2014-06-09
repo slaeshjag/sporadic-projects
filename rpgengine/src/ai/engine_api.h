@@ -7,7 +7,7 @@
 void engine_api_send(struct ai_msgbuf *buf, int from, int to, void *data, int arg[8], int args);
 void engine_api_invalid_msg(struct ai_msgbuf *buf, int from, int to);
 void engine_api_direction_update(struct ai_msgbuf *buf, int chr);
-void engine_api_replace_sprite(struct ai_msgbuf *buf, int chr, int sprite);
+void engine_api_replace_sprite(struct ai_msgbuf *buf, int chr, char *sprite);
 void engine_api_next_message(struct ai_msgbuf *buf, int from, int to);
 void engine_api_follow_me(struct ai_msgbuf *buf, int chr);
 void engine_api_request_player(struct ai_msgbuf *buf, int me);
