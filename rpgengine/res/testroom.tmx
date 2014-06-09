@@ -25,5 +25,12 @@
 29,29,29,29,29,29,29,29,29,29,29,29,29,29,29
 </data>
  </layer>
- <objectgroup name="Object Layer 1" width="15" height="15"/>
+ <objectgroup name="Object Layer 1" width="15" height="15">
+  <object name="box" type="npc" x="256" y="352" width="32" height="32">
+   <properties>
+    <property name="ai" value="box_ai"/>
+    <property name="sprite" value="res/box.spr"/>
+   </properties>
+  </object>
+ </objectgroup>
 </map>

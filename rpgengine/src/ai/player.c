@@ -82,7 +82,7 @@ static void player_handle_send(struct aicomm_struct ac, struct player_state *ps)
 static void player_loop(struct aicomm_struct ac, struct player_state *ps) {
 	int self = ac.self;
 	int n;
-	DARNIT_KEYS keys;
+	static DARNIT_KEYS keys;
 
 	keys = darnit_keys;
 	engine_api_get_keys(ps->msg, ac.self);

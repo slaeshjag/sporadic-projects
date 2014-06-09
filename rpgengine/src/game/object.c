@@ -209,7 +209,7 @@ static int object_test_map_x(int x, int x2, int y, int l, int h, int dir, int en
 	int collide = 0;
 
 	tile_h = world.map.map->layer[l].tile_h;
-	for (dy = 0; dy <= h; dy += tile_h) {
+	for (dy = 0; dy < h; dy += tile_h) {
 		test_tile:
 
 		t1 = OBJ_TO_TILE_COORD(x, y + dy, l);
@@ -237,11 +237,13 @@ static int object_test_map_x(int x, int x2, int y, int l, int h, int dir, int en
 
 
 static int object_test_map_y(int x, int y, int y2, int l, int w, int dir, int entry) {
-	int tile_w, dx, t1, t2;
+	int tile_w, dx, t1, t2, f = 0;
 	int collide = 0;
 
 	tile_w = world.map.map->layer[l].tile_w;
-	for (dx = 0; dx <= w; dx += tile_w) {
+	for (dx = 0; dx < w; dx += tile_w) {
+		test_tile:
+
 		t1 = OBJ_TO_TILE_COORD(x + dx, y, l);
 		t2 = OBJ_TO_TILE_COORD(x + dx, y2, l);
 		if (t1 < 0 || t2 < 0) {
@@ -253,6 +255,12 @@ static int object_test_map_y(int x, int y, int y2, int l, int w, int dir, int en
 		if (TILE(t2, l) & dir)
 			collide = 1;
 		object_signal_map_event(entry, t2, l);
+	}
+	
+	if (dx >= w && !f) {
+		f = 1;
+		dx = w - 1;
+		goto test_tile;
 	}
 
 	return collide;
@@ -311,8 +319,9 @@ int object_test_collision(int entry, int dx, int dy) {
 	
 	for (i = s = 0; i < n; i++) {
 		e = world.map.object.buff1[i];
-		if (world.map.object.entry[e].l != world.map.object.entry[ce->self].l)
+		if (world.map.object.entry[e].l != world.map.object.entry[ce->self].l) {
 			continue;
+		}
 		if (e == ce->self)
 			continue;
 		ac.arg[0] = ce->self;

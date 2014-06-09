@@ -203,6 +203,22 @@ struct aicomm_struct aicomm_f_skey(struct aicomm_struct ac) {
 }
 
 
+struct aicomm_struct aicomm_f_sela(struct aicomm_struct ac) {
+	CHECK_FROM_VALID;
+
+	ac.self = ac.from;
+	ac.from = -1;
+	ac.msg = AICOMM_MSG_SELA;
+	if (ac.arg[0] < 0 || ac.arg[0] >= OBJECT_MAX) {
+		ac.msg = AICOMM_MSG_NOAI;
+		return ac;
+	}
+
+	world.map.object.entry[ac.arg[0]].l = ac.arg[1];
+
+	return ac;
+}
+
 struct aicomm_struct aicomm_f_prop(struct aicomm_struct ac) {
 	CHECK_FROM_VALID;
 

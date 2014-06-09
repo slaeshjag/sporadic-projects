@@ -20,13 +20,13 @@ struct aicomm_struct EXPORT_THIS teleporter_ai(struct aicomm_struct ac) {
 	struct internal *i;
 	int from;
 
-	if (!ac.ce->state) {
-		ac.ce->state = malloc(sizeof(*i));
-		i = ac.ce->state;
+	if (!ac.ce->state || ac.msg == AICOMM_MSG_INIT) {
+		ac.ce[ac.self].state = malloc(sizeof(*i));
+		i = ac.ce[ac.self].state;
 		i->state = 0;
 	}
 
-	i = ac.ce->state;
+	i = ac.ce[ac.self].state;
 	from = ac.from;
 	ac.from = ac.self;
 	
@@ -77,8 +77,8 @@ struct aicomm_struct EXPORT_THIS teleporter_ai(struct aicomm_struct ac) {
 		ac.msg = AICOMM_MSG_DONE;
 		return ac;
 	} else if (ac.msg == AICOMM_MSG_DESTROY) {
-		free(ac.ce->state);
-		ac.ce->state = NULL;
+		free(ac.ce[ac.self].state);
+		ac.ce[ac.self].state = NULL;
 	}
 
 	nope:

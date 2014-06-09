@@ -18,7 +18,7 @@ struct aicomm_struct box_ai(struct aicomm_struct ac) {
 		case AICOMM_MSG_SEND:
 			ac.msg = AICOMM_MSG_TBOX;
 			ac.from = ac.self;
-			ac.arg[0] = ac.ce[ac.self].self;
+			ac.arg[0] = 0;
 			tb.message = "This is a long question.\nIt spans multiple lines.\nIt is just to make sure selection doesn't break.\nI hope you can understand\nCool?";
 			tb.question = "Yes\nнйет\nMaybe\nNever";
 			ac.argp = &tb;

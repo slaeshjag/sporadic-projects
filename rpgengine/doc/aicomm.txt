@@ -206,6 +206,15 @@ ac.argp - String containing the property name to look up
 
 Returns the looked up property in ac.argp
 
+
+======
+
+AICOMM_MSG_SELA - Set current layer for an object
+
+ac.from - Who you are
+arg0 - Object ID to set layer for
+arg1 - The layer to set it to
+
 ======
 
 AICOMM_MSG_TXTE - Make a text string appear, which scrolls up and disappear

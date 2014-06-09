@@ -20,6 +20,7 @@ struct aicomm_struct aicomm_f_invm(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_txte(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_keys(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_skey(struct aicomm_struct ac);
+struct aicomm_struct aicomm_f_sela(struct aicomm_struct ac);
 struct aicomm_struct aicomm_f_prop(struct aicomm_struct ac);
 
 
