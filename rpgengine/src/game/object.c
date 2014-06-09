@@ -22,6 +22,7 @@ void object_init() {
 	char ai_name[64];
 	world.map.object.not_spawned = NULL;
 	world.map.object.spawned = d_bbox_new(OBJECT_MAX);
+	d_bbox_sortmode(world.map.object.spawned, DARNIT_BBOX_SORT_Y);
 	d_bbox_set_indexkey(world.map.object.spawned);
 	
 	/* Load AI code library */
@@ -85,39 +86,41 @@ int object_get_character_looked_at(int src) {
 	d_sprite_hitbox(world.map.object.entry[src].sprite, &x, &y, &w, &h);
 	x += (world.map.object.entry[src].x >> 8);
 	y += (world.map.object.entry[src].y >> 8);
+	x += (w >> 1);
+	y += (h >> 1);
 
 	switch (world.map.object.entry[src].dir) {
 		case 0:	/* West */
-			xt = x - (w >> 1);
-			yt = y + (h >> 1);
+			xt = x - (w >> 1) * 3;
+			yt = y - (h >> 1);
 			break;
 		case 1:	/* North */
-			xt = x + (w >> 1);
-			yt = y - (h >> 1);
+			xt = x - (w >> 1);
+			yt = y - (h >> 1) * 3;
 			break;
 		case 2:	/* East */
-			xt = x + w;
-			yt = y + (h >> 1);
+			xt = x + (w >> 1);
+			yt = y - (h >> 1);
 			break;
 		case 3:	/* South */
-			xt = x + (w >> 1);
-			yt = y + h;
+			xt = x - (w >> 1);
+			yt = y + (h >> 1);
 			break;
 		case 4: /* North-west */
-			xt = x - (w >> 1);
-			yt = y - (h >> 1);
+			xt = x - (w >> 1) * 3;
+			yt = y - (h >> 1) * 3;
 			break;
 		case 5:	/* North-east */
-			xt = x + w;
-			yt = y - (h >> 1);
+			xt = x + (w >> 1);
+			yt = y - (h >> 1) * 3;
 			break;
 		case 6:	/* South-east */
-			xt = x + w;
-			yt = y + h;
+			xt = x + (w >> 1);
+			yt = y + (h >> 1);
 			break;
 		case 7:	/* South-west */
-			xt = x - (w >> 1);
-			yt = y + h;
+			xt = x - (w >> 1) * 3;
+			yt = y + (h >> 1);
 			break;
 		default:
 			fprintf(stderr, "Invalid direction %i\n", world.map.object.entry[src].dir);
@@ -125,7 +128,7 @@ int object_get_character_looked_at(int src) {
 			break;
 	}
 
-	n = d_bbox_test(world.map.object.spawned, xt, yt, (w >> 1), (h >> 1), t, 9);
+	n = d_bbox_test(world.map.object.spawned, xt, yt, w, h, t, 9);
 	if (!n)
 		return -1;
 	for (i = 0; i < 2; i++) {
@@ -155,14 +158,14 @@ void object_update_sprite(int entry) {
 	ce = &world.map.object.entry[entry];
 
 	d_sprite_hitbox(ce->sprite, &x, &y, &w, &h);
-	x *= -1;
-	y *= -1;
+//	x *= -1;
+//	y *= -1;
 	x += (ce->x >> 8);
 	y += (ce->y >> 8);
 
 	d_sprite_direction_set(ce->sprite, ce->dir);
 	(ce->special_action.animate ? d_sprite_animate_start : d_sprite_animate_stop)(ce->sprite);
-	d_sprite_move(ce->sprite, x, y);
+	d_sprite_move(ce->sprite, (ce->x >> 8), (ce->y >> 8));
 	d_bbox_move(world.map.object.spawned, ce->self, x, y);
 	d_bbox_resize(world.map.object.spawned, ce->self, w, h);
 
@@ -282,11 +285,13 @@ int object_test_map(int entry, int dx, int dy) {
 		return 0;
 
 	ce = &world.map.object.entry[entry];
-	d_sprite_hitbox(ce->sprite, NULL, NULL, &w, &h);
-	x2 = ((ce->x + dx) >> 8);
-	y2 = ((ce->y + dy) >> 8);
-	x = (ce->x >> 8);
-	y = (ce->y >> 8);
+	d_sprite_hitbox(ce->sprite, &x, &y, &w, &h);
+	x2 = x;
+	y2 = y;
+	x2 += ((ce->x + dx) >> 8);
+	y2 += ((ce->y + dy) >> 8);
+	x += (ce->x >> 8);
+	y += (ce->y >> 8);
 	if (x < 0 || x2 < 0 || y < 0 || y2 < 0)
 		return 1;
 
@@ -404,7 +409,7 @@ void object_message_loop(struct aicomm_struct ac) {
 				return;
 			ac.self = ac.from;
 			ac.from = -1;
-			ac = world.map.object.entry[ac.from].loop(ac);
+			ac = world.map.object.entry[ac.self].loop(ac);
 		} else
 			ac = world.map.object.entry[ac.self].loop(ac);
 
@@ -465,16 +470,17 @@ void object_loop() {
 
 
 void object_render_layer(int l) {
-	int i;
+	int i, m;
 
+	m = d_bbox_test(world.map.object.spawned, world.map.cam.cam_x, world.map.cam.cam_y, d_platform_get().screen_w, d_platform_get().screen_h, world.map.object.buff1, OBJECT_MAX);
 	d_render_offset(world.map.cam.cam_x, world.map.cam.cam_y);
 
-	for (i = 0; i < OBJECT_MAX; i++) {
-		if (!world.map.object.entry[i].loop)
+	for (i = 0; i < m; i++) {
+		if (!world.map.object.entry[world.map.object.buff1[i]].loop)
 			continue;
-		if (world.map.object.entry[i].l != l)
+		if (world.map.object.entry[world.map.object.buff1[i]].l != l)
 			continue;
-		d_sprite_draw(world.map.object.entry[i].sprite);
+		d_sprite_draw(world.map.object.entry[world.map.object.buff1[i]].sprite);
 	}
 
 	return;
@@ -500,8 +506,6 @@ void object_despawn(int entry) {
 		return;
 
 	ce = &world.map.object.entry[entry];
-	if (!world.map.object.entry[entry].loop)
-		return;
 	
 	ac.msg = AICOMM_MSG_DESTROY;
 	ac.from = -1;
@@ -509,13 +513,13 @@ void object_despawn(int entry) {
 	object_message_loop(ac);
 
 	if (ce->map_id >= 0) {
-		d_bbox_move(world.map.object.not_spawned, ce->map_id, ce->x << 8, ce->y << 8);
+		d_bbox_move(world.map.object.not_spawned, ce->map_id, ce->x >> 8, ce->y >> 8);
 		d_bbox_resize(world.map.object.not_spawned, ce->map_id, d_sprite_width(ce->sprite), d_sprite_height(ce->sprite));
 	}
 	
 	d_bbox_delete(world.map.object.spawned, entry);
 	d_sprite_free(ce->sprite);
-	world.map.object.entry[entry].loop = NULL;
+	memset(&world.map.object.entry[entry], 0, sizeof(world.map.object.entry[entry]));
 
 	if (world.map.cam.player == entry)
 		world.map.cam.player = -1;
@@ -529,13 +533,14 @@ int object_spawn(int map_id) {
 	struct character_entry *ce;
 	struct aicomm_struct ac;
 
+
 	if ((slot = d_bbox_add(world.map.object.spawned, 0, 0, 1, 1)) < 0)
 		return -1;
 	
 	ce = &world.map.object.entry[slot];
 	ce->sprite = d_sprite_load(d_map_prop(world.map.map->object[map_id].ref, "sprite"), 0, DARNIT_PFORMAT_RGB5A1);
 	ce->map_id = map_id;
-	d_bbox_move(world.map.object.not_spawned, ce->map_id, INT_MAX, INT_MAX);
+	d_bbox_move(world.map.object.not_spawned, ce->map_id, INT_MAX/2, INT_MAX/2);
 	d_bbox_resize(world.map.object.not_spawned, ce->map_id, 1, 1);
 	d_sprite_hitbox(ce->sprite, &x, &y, &w, &h);
 

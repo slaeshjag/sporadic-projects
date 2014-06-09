@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include "object.h"
 
+#define	MAP_CAMERA_DESPAWN_BORDER	128
+
 struct map_s {
 	const char			*current_map;
 	

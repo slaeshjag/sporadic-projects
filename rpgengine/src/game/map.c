@@ -1,4 +1,6 @@
 #include <darnit/darnit.h>
+#include <string.h>
+#include <limits.h>
 
 #include "world.h"
 #include "map.h"
@@ -68,7 +70,7 @@ void map_camera_move(int32_t center_x, int32_t center_y) {
 
 
 static void map_camera_loop() {
-	int m;
+	int m, cam_x, cam_y, cam_w, cam_h, i;
 
 	if (world.map.cam.follow >= 0) {
 		world.map.cam.cam_x = (world.map.object.entry[world.map.cam.follow].x >> 8) - d_platform_get().screen_w / 2 + d_sprite_width(world.map.object.entry[world.map.cam.follow].sprite) / 2;
@@ -88,10 +90,37 @@ static void map_camera_loop() {
 	if (MAP_H_P < d_platform_get().screen_h)
 		world.map.cam.cam_y = -((signed) (d_platform_get().screen_h - MAP_H_P)) / 2;
 
-	m = d_bbox_test(world.map.object.not_spawned, world.map.cam.cam_x, world.map.cam.cam_y, d_platform_get().screen_w, d_platform_get().screen_h, world.map.object.buff1, OBJECT_MAX);
+
+	/* Spawn objects within range */
+	cam_x = world.map.cam.cam_x - MAP_CAMERA_DESPAWN_BORDER / 2;
+	cam_y = world.map.cam.cam_y - MAP_CAMERA_DESPAWN_BORDER / 2;
+	cam_w = d_platform_get().screen_w + MAP_CAMERA_DESPAWN_BORDER;
+	cam_h = d_platform_get().screen_h + MAP_CAMERA_DESPAWN_BORDER;
+
+	m = d_bbox_test(world.map.object.not_spawned, cam_x, cam_y, cam_w, cam_h, world.map.object.buff1, OBJECT_MAX);
 	m--;
 	for (; m >= 0; m--)
 		object_spawn(world.map.object.buff1[m]);
+
+	/* De-spawn objects outside of range */
+	cam_x = world.map.cam.cam_x - MAP_CAMERA_DESPAWN_BORDER;
+	cam_y = world.map.cam.cam_y - MAP_CAMERA_DESPAWN_BORDER;
+	cam_w = d_platform_get().screen_w + MAP_CAMERA_DESPAWN_BORDER * 2;
+	cam_h = d_platform_get().screen_h + MAP_CAMERA_DESPAWN_BORDER * 2;
+
+	m = d_bbox_test(world.map.object.spawned, cam_x, cam_y, cam_w, cam_h, world.map.object.buff1, OBJECT_MAX);
+	memset(world.map.object.buff2, 0, sizeof(world.map.object.buff2));
+	for (i = 0; i < m; i++)
+		world.map.object.buff2[world.map.object.buff1[i]] = 1;
+	for (i = 0; i < OBJECT_MAX; i++) {
+		if (!world.map.object.entry[i].loop)
+			continue;
+		if (world.map.object.buff2[i])
+			continue;
+		if (world.map.object.entry[i].special_action.nodespawn)
+			continue;
+		object_despawn(i);
+	}
 
 	return;
 }
