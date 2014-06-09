@@ -67,7 +67,7 @@ struct textbox {
 
 void textbox_init(int w, int h, int x, int y, int pad_x, int pad_y, int pad_x2, int pad_y2);
 void textbox_loop();
-void textbox_add_message(const char *message, const char *question, int face, int pingback);
+void textbox_add_message(const char *message, const char *question, const char *face, int pingback);
 void textbox_draw();
 void textbox_destroy();
 

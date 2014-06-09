@@ -76,6 +76,7 @@ struct character_save {
 struct textbox_properties {
 	const char		*message;
 	const char		*question;
+	const char		*face;
 };
 
 

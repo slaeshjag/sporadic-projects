@@ -226,12 +226,11 @@ void textbox_loop() {
 }
 
 
-void textbox_add_message(const char *message, const char *question, int face, int pingback) {
+void textbox_add_message(const char *message, const char *question, const char *face, int pingback) {
 	struct textbox *tb = world.textbox;
 	struct aicomm_struct ac;
 	int blol, w, h, wt, ht, x, y, i;
 	const void *bluh;
-	char face_path[128];
 
 	if (tb)
 		free(tb->message), tb->message = NULL;
@@ -242,9 +241,8 @@ void textbox_add_message(const char *message, const char *question, int face, in
 	if (tb->face_ts)
 		d_render_tilesheet_free(tb->face_ts), tb->face_ts = NULL;
 	
-	if (face >= 0) {
-		sprintf(face_path, TBOX_FACE_PATH, face);
-		tb->face_ts = d_render_tilesheet_load(face_path, world.config.face_w, world.config.face_h, DARNIT_PFORMAT_RGB5A1);
+	if (face) {
+		tb->face_ts = d_render_tilesheet_load(face, world.config.face_w, world.config.face_h, DARNIT_PFORMAT_RGB5A1);
 		d_render_tile_tilesheet(tb->face, tb->face_ts);
 		d_render_tile_move(tb->face, 0, tb->x + 8, (tb->h - world.config.face_h) / 2 + tb->y);
 		d_render_tile_set(tb->face, 0, 0);

@@ -176,12 +176,11 @@ void engine_api_text_effect(struct ai_msgbuf *buf, int me, int time, int x, int 
 	return;
 }
 
-void engine_api_textbox(struct ai_msgbuf *buf, struct textbox_properties *tbp, int from, int face) {
+void engine_api_textbox(struct ai_msgbuf *buf, struct textbox_properties *tbp, int from) {
 	struct aicomm_struct ac;
 
 	ac.msg = AICOMM_MSG_TBOX;
 	ac.from = from;
-	ac.arg[0] = face;
 	ac.argp = tbp;
 
 	aicom_msgbuf_push(buf, ac);
