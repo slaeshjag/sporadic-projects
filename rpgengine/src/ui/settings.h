@@ -1,0 +1,12 @@
+#ifndef __MENU_SETTINGS_H__
+#define	__MENU_SETTINGS_H__
+
+
+#define	MENU_LIST_ARROW_PAD		24
+
+#define	MENU_EVENT_STEP_BIG		5
+#define	MENU_EVENT_ASCROLL_TIMEOUT	500
+#define	MENU_EVENT_AREPEAT_TIMEOUT	100
+
+
+#endif

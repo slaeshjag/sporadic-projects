@@ -1,9 +1,6 @@
 #ifndef __MENU_EVENT_H__
 #define	__MENU_EVENT_H__
 
-#define	MENU_EVENT_STEP_BIG		5
-#define	MENU_EVENT_ASCROLL_TIMEOUT	500
-#define	MENU_EVENT_AREPEAT_TIMEOUT	100
 
 
 struct menu_event_s {
@@ -16,6 +13,7 @@ struct menu_event_s {
 
 struct menu_event_status_s {
 	int				scroll;
+	int				activate;
 };
 
 

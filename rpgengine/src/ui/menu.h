@@ -3,6 +3,7 @@
 
 #include <darnit/darnit.h>
 
+#include "settings.h"
 #include "palette.h"
 #include "text.h"
 #include "list.h"
@@ -25,6 +26,7 @@ struct menu_widget_s {
 	int					hidden;
 
 	void					(*draw)(struct menu_widget_s *);
+	void					(*destroy)(struct menu_widget_s *);
 };
 
 
@@ -44,6 +46,8 @@ struct menu_s {
 
 struct menu_config_s {
 	DARNIT_TILESHEET			*ts_sys;
+	int					tile_w;
+	int					tile_h;
 };
 
 

@@ -16,6 +16,7 @@ struct menu_event_status_s menu_event_listen(struct menu_event_s *e) {
 	struct menu_event_status_s s;
 	int d = 0;
 	s.scroll = 0;
+	s.activate = 0;
 	DARNIT_KEYS k;
 
 	k = d_keys_get();
@@ -40,6 +41,20 @@ struct menu_event_status_s menu_event_listen(struct menu_event_s *e) {
 		k.right = 1;
 		d_keys_set(k);
 		e->direction = 0;
+	}
+
+	if (d_keys_get().BUTTON_ACCEPT) {
+		d_keys_zero();
+		k.BUTTON_ACCEPT = 1;
+		d_keys_set(k);
+		s.activate = 1;
+	}
+	
+	if (d_keys_get().BUTTON_CANCEL) {
+		d_keys_zero();
+		k.BUTTON_CANCEL = 1;
+		d_keys_set(k);
+		s.activate = 1;
 	}
 
 	if (d_keys_get().up)

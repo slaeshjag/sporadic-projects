@@ -26,6 +26,8 @@ unsigned char menu_color_palette[1024] = {
 
 
 void menu_init(const char *ts_sys, int tile_w, int tile_h) {
+	ui_config.tile_w = tile_w;
+	ui_config.tile_h = tile_h;
 	ui_config.ts_sys = d_render_tilesheet_load(ts_sys, tile_w, tile_h, DARNIT_PFORMAT_RGB5A1);
 
 	return;
@@ -140,6 +142,12 @@ void menu_draw(struct menu_s *m) {
 
 
 void menu_destroy(struct menu_s *m) {
+	int i;
+
+	for (i = 0; i < m->widgets; i++) {
+		m->widget[i].destroy(&m->widget[i]);
+	}
+
 	fprintf(stderr, "STUB: menu_destroy()\n");
 	return;
 }

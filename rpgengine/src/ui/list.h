@@ -8,11 +8,14 @@
 struct menu_widget_list_s {
 	DARNIT_TEXT_SURFACE	*surface;
 	DARNIT_TILE		*pointer;
+	DARNIT_FONT		*font;
 
 	int			selection;
 	int			top_selection;
 	int			selection_h;
 	int			selection_w;
+
+	int			status;
 
 	char			*option_buff;
 	DARNIT_SPRITE		**option_icon;
