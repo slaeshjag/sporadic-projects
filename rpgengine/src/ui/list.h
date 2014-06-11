@@ -19,6 +19,7 @@ struct menu_widget_list_s {
 	int			options;
 
 	struct menu_s		*m;
+	struct menu_event_s	*e;
 };
 
 int menu_new_widget_list(struct menu_s *m, int x, int y, int list_w, int list_h, const char *options, const char *icons, DARNIT_FONT *font);

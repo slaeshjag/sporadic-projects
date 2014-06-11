@@ -111,10 +111,10 @@ void menu_indicate_scroll(struct menu_s *m, int scroll) {
 
 	if (scroll & 2) {
 		if (m->tm->data[m->tm->w - 1] != 11)
-			m->tm->data[m->tm->w * m->tm->h - 1] = 11, update = 1;
+			m->tm->data[m->tm->w - 1] = 11, update = 1;
 	} else {
 		if (m->tm->data[m->tm->w - 1] != 3)
-		m->tm->data[m->tm->w * m->tm->h - 1] = 3, update = 1;
+		m->tm->data[m->tm->w - 1] = 3, update = 1;
 	}
 
 	if (update)

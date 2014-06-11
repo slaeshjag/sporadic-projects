@@ -3,6 +3,7 @@
 
 #include "menu.h"
 #include "list.h"
+#include "event.h"
 
 void menu_list_update_selection(struct menu_widget_s *l) {
 	char buff[128], *next;
@@ -13,6 +14,8 @@ void menu_list_update_selection(struct menu_widget_s *l) {
 	/* Check bounds */
 	if (l->widget.list.selection >= l->widget.list.options)
 		l->widget.list.selection = 0;
+	if (l->widget.list.selection < 0)
+		l->widget.list.selection = l->widget.list.options - 1;
 	if (l->widget.list.selection - l->widget.list.selection_h + 1 > l->widget.list.top_selection && l->widget.list.options > l->widget.list.selection_h)
 		l->widget.list.top_selection = l->widget.list.selection - l->widget.list.selection_h + 1;
 	if (l->widget.list.selection < l->widget.list.top_selection)
@@ -51,10 +54,19 @@ void menu_list_update_selection(struct menu_widget_s *l) {
 
 
 void menu_draw_widget_list(struct menu_widget_s *w) {
+	struct menu_event_status_s s;
+	/* Logic stuff should probably have their own function.. */
+	s = menu_event_listen(w->widget.list.e);
+
+	w->widget.list.selection += s.scroll;
+	if (s.scroll)
+		menu_list_update_selection(w);
+
 	d_text_surface_draw(w->widget.list.surface);
 
 	return;
 }
+
 
 int menu_new_widget_list(struct menu_s *m, int x, int y, int list_w, int list_h, const char *options, const char *icons, DARNIT_FONT *font) {
 	int slot, i, slot_w, o, n;
@@ -77,6 +89,7 @@ int menu_new_widget_list(struct menu_s *m, int x, int y, int list_w, int list_h,
 	m->widget[slot].widget.list.selection_h = list_h;
 	m->widget[slot].widget.list.selection_w = list_w;
 	m->widget[slot].widget.list.m = m;
+	m->widget[slot].widget.list.e = menu_event_listener_new();
 
 	m->widget[slot].widget.list.option_buff = strdup(options);
 
