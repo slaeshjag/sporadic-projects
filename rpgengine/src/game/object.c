@@ -528,30 +528,24 @@ void object_despawn(int entry) {
 }
 
 
-int object_spawn(int map_id) {
-	int slot, x, y, w, h;
+int object_spawn_direct(int x, int y, int l, const char *ai, const char *sprite, int map_id) {
+	int slot, w, h;
 	struct character_entry *ce;
 	struct aicomm_struct ac;
-
 
 	if ((slot = d_bbox_add(world.map.object.spawned, 0, 0, 1, 1)) < 0)
 		return -1;
 	
 	ce = &world.map.object.entry[slot];
-	ce->sprite = d_sprite_load(d_map_prop(world.map.map->object[map_id].ref, "sprite"), 0, DARNIT_PFORMAT_RGB5A1);
+	ce->sprite = d_sprite_load(sprite, 0, DARNIT_PFORMAT_RGB5A1);
 	ce->map_id = map_id;
-	d_bbox_move(world.map.object.not_spawned, ce->map_id, INT_MAX/2, INT_MAX/2);
-	d_bbox_resize(world.map.object.not_spawned, ce->map_id, 1, 1);
+	ce->x = x << 8;
+	ce->y = y << 8;
+	ce->l = l;
+	
 	d_sprite_hitbox(ce->sprite, &x, &y, &w, &h);
-
-	ce->x = (world.map.map->object[map_id].x * world.map.map->layer->tile_w) << 8;
-	ce->y = (world.map.map->object[map_id].y * world.map.map->layer->tile_h) << 8;
 	d_bbox_move(world.map.object.spawned, slot, (ce->x >> 8) + x, (ce->y >> 8) + y);
 	d_bbox_resize(world.map.object.spawned, slot, w, h);
-	ce->l = world.map.map->object[map_id].l;
-	fprintf(stderr, "Using AI %s\n",  d_map_prop(world.map.map->object[map_id].ref, "ai"));
-	fprintf(stderr, "Spawning object %i...\n", map_id);
-	
 	
 	ce->dx = ce->dy = 0;
 	ce->self = slot;
@@ -564,7 +558,8 @@ int object_spawn(int map_id) {
 	d_sprite_activate(ce->sprite, 0);
 	object_update_sprite(slot);
 	
-	strcpy(ce->ai, d_map_prop(world.map.map->object[map_id].ref, "ai"));
+	strcpy(ce->ai, ai);
+	
 	ce->loop = d_dynlib_get(world.map.object.ai_lib, ce->ai);
 	ac.msg = AICOMM_MSG_INIT;
 	ac.from = -1;
@@ -572,6 +567,25 @@ int object_spawn(int map_id) {
 	object_message_loop(ac);
 	
 	object_set_hitbox(slot);
+
+	return slot;
+}
+
+int object_spawn(int map_id) {
+	int slot, x, y, l;
+	const char *ai, *sprite;
+
+	x = (world.map.map->object[map_id].x * world.map.map->layer->tile_w);
+	y = (world.map.map->object[map_id].y * world.map.map->layer->tile_h);
+	l = world.map.map->object[map_id].l;
+	sprite = d_map_prop(world.map.map->object[map_id].ref, "sprite");
+	ai = d_map_prop(world.map.map->object[map_id].ref, "ai");
+
+	if ((slot = object_spawn_direct(x, y, l, ai, sprite, map_id)) < 0)
+		return -1;
+		
+	d_bbox_move(world.map.object.not_spawned, map_id, INT_MAX/2, INT_MAX/2);
+	d_bbox_resize(world.map.object.not_spawned, map_id, 1, 1);
 
 	return slot;
 }
