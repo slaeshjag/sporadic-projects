@@ -26,5 +26,7 @@ struct menu_widget_list_s {
 };
 
 int menu_new_widget_list(struct menu_s *m, int x, int y, int list_w, int list_h, const char *options, const char *icons, DARNIT_FONT *font);
+void menu_list_get_selection(struct menu_s *m, int slot, int *selection, int *activated);
+void menu_list_await_selection(struct menu_s *m, int slot, int activate);
 
 #endif

@@ -34,6 +34,8 @@ void menu_list_update_selection(struct menu_widget_s *l) {
 	p = &menu_color_palette[PALETTE_DEFAULT_TEXT * 4];
 	ps = &menu_color_palette[PALETTE_SELECTED_TEXT * 4];
 	for (i = 0; i < l->widget.list.top_selection + l->widget.list.selection_h; i++) {
+		if (i >= l->widget.list.options)
+			break;
 		if (i < l->widget.list.top_selection)
 			goto iter;
 
@@ -158,3 +160,20 @@ int menu_new_widget_list(struct menu_s *m, int x, int y, int list_w, int list_h,
 	menu_list_update_selection(&m->widget[slot]);
 	return slot;
 }
+
+
+void menu_list_get_selection(struct menu_s *m, int slot, int *selection, int *activated) {
+	if (selection)
+		*selection = m->widget[slot].widget.list.selection;
+	if (activated)
+		*activated = m->widget[slot].widget.list.status + 1;
+	return;
+}
+
+
+void menu_list_await_selection(struct menu_s *m, int slot, int activated) {
+	m->widget[slot].widget.list.status = activated - 1;
+
+	return;
+}
+	

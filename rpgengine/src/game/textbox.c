@@ -9,31 +9,6 @@
 
 #define	TB_SURFACE	(menu_get_surface_from_text(tb->tb_m, tb->text_slot))
 
-void textbox_init_background(DARNIT_TILEMAP *tc, int w, int h) {
-	int wt, ht, i;
-
-	/* Generate textbox background */
-	wt = w / world.config.tile_w;
-	ht = h / world.config.tile_h;
-
-	for (i = 1; i < wt * ht; i++)
-		tc->data[i] = 5;
-	for (i = 1; i < wt - 1; i++)
-		tc->data[i] = 2;
-	for (i = wt * (ht - 1); i < wt * ht; i++)
-		tc->data[i] = 8;
-	for (i = 0; i < wt * ht; i += wt)
-		tc->data[i] = 4;
-	for (i = wt - 1; i < wt * ht; i += wt)
-		tc->data[i] = 6;
-	tc->data[0] = 1;
-	tc->data[wt - 1] = 3;
-	tc->data[wt * (ht - 1)] = 7;
-	tc->data[wt * ht - 1] = 9;
-
-	d_tilemap_recalc(tc);
-}
-
 
 void textbox_init(int w, int h, int x, int y, int pad_x, int pad_y, int pad_x2, int pad_y2) {
 	struct textbox *tb;
@@ -49,8 +24,7 @@ void textbox_init(int w, int h, int x, int y, int pad_x, int pad_y, int pad_x2, 
 	menu_set_position(tb->tb_m, x, y);
 
 	/* TODO: Implement */
-	tb->option = NULL;
-	tb->options = 0;
+	tb->qb = NULL;
 
 	tb->face = d_render_tile_new(1, NULL);
 	tb->face_ts = NULL;
@@ -78,27 +52,11 @@ void textbox_init(int w, int h, int x, int y, int pad_x, int pad_y, int pad_x2, 
 }
 
 
-void textbox_update_pointers(struct textbox *tb) {
-	int y;
-
-	y = d_font_glyph_hs(world.config.font);
-	y *= tb->selection;
-	y += tb->y_selection;
-	y -= world.config.tile_h / 2;
-	y += (d_font_glyph_hs(world.config.font) / 2);
-
-	d_render_tile_move(tb->pointer, 0, d_platform_get().screen_w - world.config.tile_w  * tb->qt->w, y);
-	d_render_tile_move(tb->pointer, 1, d_platform_get().screen_w - world.config.tile_w, y);
-
-	return;
-}
-
-
 void textbox_loop() {
 	struct textbox *tb;
 	unsigned char *p = menu_color_palette;
 	struct aicomm_struct ac;
-	int i, next;
+	int i, next, qb_sel, qb_act;
 	DARNIT_KEYS k;
 
 	/* TODO: Init */
@@ -106,11 +64,14 @@ void textbox_loop() {
 	next = 0;
 	if (!tb->message)
 		return;
+
+	if (tb->qb)
+		menu_list_get_selection(tb->qb, tb->qb_id, &qb_sel, &qb_act);
 	
 	/* Improve or somth.. */
 	tb->dt += d_last_frame_time();
 	for (; tb->dt > tb->ms_per_char && tb->message[tb->char_pos]; tb->dt -= tb->ms_per_char) {
-		if (d_keys_get().BUTTON_ACCEPT) {
+		if (d_keys_get().BUTTON_ACCEPT || qb_act) {
 			tb->dt = INT_MAX;
 			next = 1;
 			k = d_keys_zero();
@@ -163,28 +124,8 @@ void textbox_loop() {
 			break;
 	}
 
-	if (d_keys_get().down) {
-		tb->selection++;
-		if (tb->selection >= (signed) tb->options)
-			tb->selection = 0;
-		k = d_keys_zero();
-		k.down = 1;
-		textbox_update_pointers(tb);
-		d_keys_set(k);
-	}
-
-	if (d_keys_get().up) {
-		tb->selection--;
-		if (tb->selection < 0)
-			tb->selection = tb->options - 1;
-		k = d_keys_zero();
-		k.up = 1;
-		textbox_update_pointers(tb);
-		d_keys_set(k);
-	}
-
 	if (!tb->message[tb->char_pos]) {
-		if (d_keys_get().BUTTON_ACCEPT || next) {
+		if (d_keys_get().BUTTON_ACCEPT || next || qb_act) {
 			k = d_keys_zero();
 			k.BUTTON_ACCEPT = 1;
 			d_keys_set(k);
@@ -192,15 +133,12 @@ void textbox_loop() {
 			/* Close textbox */
 			free(tb->message), tb->message = NULL;
 			d_render_tilesheet_free(tb->face_ts);
-			d_tilemap_free(tb->qt);
-			d_text_surface_free(tb->qts);
-			d_render_tile_free(tb->pointer);
+			tb->qb = menu_destroy(tb->qb);
 			tb->face_ts = NULL;
-			free(tb->option), tb->option = NULL;
 
 			ac.msg = AICOMM_MSG_BOXR;
 			ac.from = -1;
-			ac.arg[0] = tb->selection;
+			ac.arg[0] = (qb_act >= 0) ? qb_sel : -1;
 			ac.self = tb->char_pingback;
 			object_message_loop(ac);
 
@@ -215,6 +153,8 @@ void textbox_loop() {
 		menu_indicate_scroll(tb->tb_m, 0);
 		d_text_surface_reset(TB_SURFACE);
 		d_text_surface_offset_next_set(TB_SURFACE, tb->pad_start);
+		if (tb->qb)
+			menu_list_await_selection(tb->qb, tb->qb_id, 0);
 		tb->row = 0;
 		next = 0;
 	}
@@ -223,11 +163,22 @@ void textbox_loop() {
 }
 
 
+static int textbox_options(const char *str) {
+	int i;
+	char *next;
+
+	next = (char *) str;
+	for (i = 0; next; next = strchr(next, '\n'), i++)
+		if (next)
+			next++;
+	return i;
+}
+
+
 void textbox_add_message(const char *message, const char *question, const char *face, int pingback) {
 	struct textbox *tb = world.textbox;
 	struct aicomm_struct ac;
-	int blol, w, h, wt, ht, x, y, i;
-	const void *bluh;
+	int blol, w, h, wt, ht;
 
 	if (tb)
 		free(tb->message), tb->message = NULL;
@@ -253,11 +204,6 @@ void textbox_add_message(const char *message, const char *question, const char *
 
 	tb->message = malloc(strlen(message) + 1);
 	strcpy(tb->message, message);
-	if (question) {
-		tb->option = malloc(strlen(question) + 1);
-		strcpy(tb->option, question);
-	} else
-		tb->option = NULL, tb->options = 0;
 	
 	d_text_surface_offset_next_set(TB_SURFACE, tb->pad_start);
 
@@ -268,45 +214,25 @@ void textbox_add_message(const char *message, const char *question, const char *
 
 	/* Figure out question box */
 
-	if (!question)
-		question = "";
-	w = 0;
-	h = d_font_string_geometrics_o(world.config.font, question, d_platform_get().screen_w / 2, &w);
-	w += world.config.tile_w * 2 + 5;
-	h += 16;
-	wt = w / world.config.tile_w;
-	if (w % world.config.tile_w)
-		wt++;
-	ht = h / world.config.tile_h;
-	if (h % world.config.tile_h)
-		ht++;
-
-	tb->pointer = d_render_tile_new(2, world.config.ts_sys);
-	d_render_tile_set(tb->pointer, 0, 12);
-	d_render_tile_set(tb->pointer, 1, 13);
-
-	tb->qt = d_tilemap_new(0xFFF, world.config.ts_sys, 0xFFF, wt, ht);
-	textbox_init_background(tb->qt, wt * world.config.tile_w, ht * world.config.tile_h);
-	d_tilemap_camera_move(tb->qt, -(d_platform_get().screen_w - wt * world.config.tile_w), -(d_platform_get().screen_h - (ht + tb->tb_m->tm->h) * world.config.tile_h));
-
-	x = y = 0;
-	x = d_platform_get().screen_w - world.config.tile_w * wt;
-	x += (wt * world.config.tile_w - w) / 2 + world.config.tile_w;
-	y = d_platform_get().screen_h - ht * world.config.tile_h;
-	y -= (tb->tb_m->tm->h * world.config.tile_h);
-	y += (world.config.tile_h * ht - h) / 2;
-	tb->qts = d_text_surface_new(world.config.font, strlen(question), w - 2 * world.config.tile_w, x, y);
-	d_text_surface_string_append(tb->qts, question);
-	bluh = question;
-	if (!strlen(question))
-		i = 0;
-	else
-		for (i = 0; bluh; i++)
-			bluh = strchr(bluh + 1, '\n');
-	tb->options = i;
-	tb->y_selection = y;
-	tb->selection = 0;
-	textbox_update_pointers(tb);
+	if (question) {
+		w = 0;
+		h = d_font_string_geometrics_o(world.config.font, question, d_platform_get().screen_w / 2, &w);
+		w += world.config.tile_w * 2 + 5;
+		h += 16;
+		wt = w / world.config.tile_w;
+		if (w % world.config.tile_w)
+			wt++;
+		ht = h / world.config.tile_h;
+		if (h % world.config.tile_h)
+			ht++;
+	
+		tb->qb = menu_new_container(wt, ht);
+		menu_set_position(tb->qb, (d_platform_get().screen_w - wt * world.config.tile_w), (d_platform_get().screen_h - (ht + tb->tb_m->tm->h) * world.config.tile_h));
+		h = textbox_options(question);
+		tb->qb_id = menu_new_widget_list(tb->qb, 0, 0, wt * world.config.tile_w, h, question, NULL, world.config.font);
+	} else
+		tb->qb = NULL;
+	d_keys_set(d_keys_get());
 
 	return;
 }
@@ -318,18 +244,11 @@ void textbox_draw() {
 	if (!tb->message)
 		return;
 	menu_draw(tb->tb_m);
+	if (tb->qb)
+		menu_draw(tb->qb);
 	d_render_offset(0, 0);
-	if (tb->option)
-		d_tilemap_draw(tb->qt);
 	
-	if (tb->option)
-		d_text_surface_draw(tb->qts);
 	d_render_tile_draw(tb->face, 1);
-
-	if (tb->option) {
-		d_render_tile_draw(tb->pointer, 2);
-	}
-
 
 	return;
 }
