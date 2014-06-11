@@ -144,12 +144,11 @@ void menu_draw(struct menu_s *m) {
 void *menu_destroy(struct menu_s *m) {
 	int i;
 
-	#if 0
 	for (i = 0; i < m->widgets; i++) {
 		m->widget[i].destroy(&m->widget[i]);
 	}
-	#endif
 
-	fprintf(stderr, "STUB: menu_destroy()\n");
+	free(m->widget);
+	d_tilemap_free(m->tm);
 	return NULL;
 }
