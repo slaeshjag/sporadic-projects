@@ -21,6 +21,7 @@ struct aicomm_struct box_ai(struct aicomm_struct ac) {
 			ac.arg[0] = 0;
 			tb.message = "This is a long question.\nIt spans multiple lines.\nIt is just to make sure selection doesn't break.\nI hope you can understand\nCool?";
 			tb.question = "Yes\nнйет\nMaybe\nNever";
+			tb.icons = "res/menu_icon_1.spr\nres/menu_icon_2.spr\nres/menu_icon_1.spr\nres/menu_icon_2.spr";
 			tb.face = "res/face_0.png";
 			ac.argp = &tb;
 			return ac;

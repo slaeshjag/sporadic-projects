@@ -175,7 +175,7 @@ static int textbox_options(const char *str) {
 }
 
 
-void textbox_add_message(const char *message, const char *question, const char *face, int pingback) {
+void textbox_add_message(const char *message, const char *question, const char *icons, const char *face, int pingback) {
 	struct textbox *tb = world.textbox;
 	struct aicomm_struct ac;
 	int blol, w, h, wt, ht;
@@ -229,7 +229,7 @@ void textbox_add_message(const char *message, const char *question, const char *
 		tb->qb = menu_new_container(wt, ht);
 		menu_set_position(tb->qb, (d_platform_get().screen_w - wt * world.config.tile_w), (d_platform_get().screen_h - (ht + tb->tb_m->tm->h) * world.config.tile_h));
 		h = textbox_options(question);
-		tb->qb_id = menu_new_widget_list(tb->qb, 0, 0, wt * world.config.tile_w, h, question, NULL, world.config.font);
+		tb->qb_id = menu_new_widget_list(tb->qb, 0, 0, wt * world.config.tile_w, h, question, icons, world.config.font);
 	} else
 		tb->qb = NULL;
 	d_keys_set(d_keys_get());

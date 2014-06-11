@@ -9,59 +9,77 @@ void menu_list_update_selection(struct menu_widget_s *l) {
 	char buff[128], *next;
 	unsigned char *p, *ps;
 	int i, n, py_center;
+	struct menu_widget_list_s *ls = &l->widget.list;
 	d_text_surface_reset(l->widget.list.surface);
 
 	/* Check bounds */
-	if (l->widget.list.selection >= l->widget.list.options)
-		l->widget.list.selection = 0;
-	if (l->widget.list.selection < 0)
-		l->widget.list.selection = l->widget.list.options - 1;
-	if (l->widget.list.selection - l->widget.list.selection_h + 1 > l->widget.list.top_selection && l->widget.list.options > l->widget.list.selection_h)
-		l->widget.list.top_selection = l->widget.list.selection - l->widget.list.selection_h + 1;
-	if (l->widget.list.selection < l->widget.list.top_selection)
-		l->widget.list.top_selection = l->widget.list.selection;
+	if (ls->selection >= ls->options)
+		ls->selection = 0;
+	if (ls->selection < 0)
+		ls->selection = ls->options - 1;
+	if (ls->selection - ls->selection_h + 1 > ls->top_selection && ls->options > ls->selection_h)
+		ls->top_selection = ls->selection - ls->selection_h + 1;
+	if (ls->selection < ls->top_selection)
+		ls->top_selection = ls->selection;
 	
 	i = 0;
-	if (l->widget.list.top_selection)
+	if (ls->top_selection)
 		i |= 2;
-	if (l->widget.list.top_selection + l->widget.list.selection_h < l->widget.list.options)
+	if (ls->top_selection + ls->selection_h < ls->options)
 		i |= 1;
-	menu_indicate_scroll(l->widget.list.m, i);
+	menu_indicate_scroll(ls->m, i);
 	
 	/* Seek selections */
 
-	next = l->widget.list.option_buff;
+	next = ls->option_buff;
 	p = &menu_color_palette[PALETTE_DEFAULT_TEXT * 4];
 	ps = &menu_color_palette[PALETTE_SELECTED_TEXT * 4];
-	for (i = 0; i < l->widget.list.top_selection + l->widget.list.selection_h; i++) {
-		if (i >= l->widget.list.options)
+	for (i = 0; i < ls->top_selection + ls->selection_h; i++) {
+		if (i >= ls->options)
 			break;
-		if (i < l->widget.list.top_selection)
+		if (i < ls->top_selection)
 			goto iter;
 
 		sscanf(next, "%[^\n]", buff);
-		if (i == l->widget.list.selection)
-			d_text_surface_color_next(l->widget.list.surface, ps[0], ps[1], ps[2]);
+		if (i == ls->selection)
+			d_text_surface_color_next(ls->surface, ps[0], ps[1], ps[2]);
 		else
-			d_text_surface_color_next(l->widget.list.surface, p[0], p[1], p[2]);
-		d_text_surface_string_append(l->widget.list.surface, buff);
-		d_text_surface_char_append(l->widget.list.surface, "\n");
+			d_text_surface_color_next(ls->surface, p[0], p[1], p[2]);
+		d_text_surface_string_append(ls->surface, buff);
+		d_text_surface_char_append(ls->surface, "\n");
 
 		iter:
 		next = strchr(next, '\n') + 1;
 	}
 
 	/* Update pointing arrows */
-	n = l->widget.list.selection - l->widget.list.top_selection;
-	py_center = d_font_glyph_hs(l->widget.list.font) / 2 - ui_config.tile_h / 2;
-	py_center += d_font_glyph_hs(l->widget.list.font) * n;
-	d_render_tile_move(l->widget.list.pointer, 0, MENU_LIST_ARROW_PAD - ui_config.tile_w, py_center);
-	d_render_tile_move(l->widget.list.pointer, 1, l->widget.list.selection_w - MENU_LIST_ARROW_PAD, py_center);
+	n = ls->selection - ls->top_selection;
+	py_center = d_font_glyph_hs(ls->font) / 2 - ui_config.tile_h / 2;
+	py_center += d_font_glyph_hs(ls->font) * n;
+	d_render_tile_move(ls->pointer, 0, MENU_LIST_ARROW_PAD - ui_config.tile_w, py_center);
+	d_render_tile_move(ls->pointer, 1, ls->selection_w - MENU_LIST_ARROW_PAD, py_center);
+	
+	/* Update icon positions */
+	for (i = ls->top_selection; i < ls->options && i < ls->selection_h + ls->top_selection; i++) {
+		if (!ls->option_icon[i])
+			continue;
+		py_center = d_font_glyph_hs(ls->font) / 2 - d_sprite_height(ls->option_icon[i]) / 2;
+		py_center += d_font_glyph_hs(ls->font) * (i - ls->top_selection);
+		d_sprite_hitbox(ls->option_icon[i], &n, NULL, NULL, NULL);
+		d_sprite_move(ls->option_icon[i], -n + MENU_LIST_ARROW_PAD, py_center);
+		if (i == ls->selection)
+			d_sprite_animate_start(ls->option_icon[i]);
+		else
+			d_sprite_animate_stop(ls->option_icon[i]);
+	}
 }
 
 
 void menu_draw_widget_list(struct menu_widget_s *w) {
 	struct menu_event_status_s s;
+	struct menu_widget_list_s *ls = &w->widget.list;
+	int i;
+
 	if (w->widget.list.status == -1) {
 		/* Logic stuff should probably have their own function.. */
 		s = menu_event_listen(w->widget.list.e);
@@ -74,7 +92,10 @@ void menu_draw_widget_list(struct menu_widget_s *w) {
 
 	d_text_surface_draw(w->widget.list.surface);
 	d_render_tile_draw(w->widget.list.pointer, 2);
-
+	for (i = ls->top_selection; i < ls->top_selection + ls->selection_h && i < ls->options; i++)
+		if (ls->option_icon[i])
+			d_sprite_draw(ls->option_icon[i]);
+	
 	return;
 }
 
@@ -131,9 +152,8 @@ int menu_new_widget_list(struct menu_s *m, int x, int y, int list_w, int list_h,
 		sscanf(next, "%[^\t\n]", path);
 		m->widget[slot].widget.list.option_icon[i] = d_sprite_load(path, 0, DARNIT_PFORMAT_RGB5A1);
 		next = strchr(next, '\n');
-		if (!next)
-			break;
-		next++;
+		if (next)
+			next++;
 	}
 
 	for (; i < m->widget[slot].widget.list.options; i++)
@@ -143,7 +163,7 @@ int menu_new_widget_list(struct menu_s *m, int x, int y, int list_w, int list_h,
 		if (!m->widget[slot].widget.list.option_icon[i])
 			continue;
 		d_sprite_hitbox(m->widget[slot].widget.list.option_icon[i], &o, NULL, &n, NULL);
-		if (o + n > slot_w)
+		if (n - o > slot_w)
 			slot_w = o + n;
 	}
 
