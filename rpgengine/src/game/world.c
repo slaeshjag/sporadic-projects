@@ -1,6 +1,7 @@
 #include "map.h"
 #include "world.h"
 #include "textbox.h"
+#include "ui/menu.h"
 
 void world_init() {
 	int n;
@@ -11,6 +12,7 @@ void world_init() {
 	world.config.font = d_font_load("res/font.ttf", WORLD_FONT_SIZE, 512, 512);
 	world.config.ts_sys = d_render_tilesheet_load(WORLD_UI_PATH, world.config.tile_w, world.config.tile_h, DARNIT_PFORMAT_RGB5A1);
 
+	menu_init(WORLD_UI_PATH, world.config.tile_w, world.config.tile_h);
 	map_init();
 
 	n = world.config.tile_h * 4;

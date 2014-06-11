@@ -67,12 +67,17 @@ void state_handle() {
 
 
 int main(int argc, char **argv) {
+	struct menu_s *m;
+
 	/* We're aiming for Pyra, not pandora */
 	d_init_custom("RPGtest", 1280, 720, 0, "rpgtest", NULL);
 	//d_init_custom("RPGtest", 800, 480, 0, "rpgtest", NULL);
 	world_init();
 	world.state = STATE_DUMMY_E;
 	world.new_state = STATE_MENU_E;
+
+	m = menu_new_container(20, 5);
+	menu_new_widget_list(m, 0, 0, 640, 5, "Arne\nGösta\nDoris\nBerit\nIngvar\nRagnar", NULL, world.config.font);
 
 	//map_load("res/testroom.ldmz", 1);
 	map_load("res/testmap.ldmz", 1);
@@ -86,6 +91,13 @@ int main(int argc, char **argv) {
 		#else
 		state_handle();
 		#endif
+		d_render_begin();
+		d_render_blend_enable();
+		menu_draw(m);
+		d_render_blend_disable();
+		d_render_end();
+		d_render_offset(0, 0);
+
 		d_loop();
 	}
 

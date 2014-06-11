@@ -3,9 +3,12 @@
 
 #include <darnit/darnit.h>
 
+#include "ui/menu.h"
+
 #define	DEFAULT_TEXT_SPEED	30
 #define	TBOX_FACE_PATH		"res/face_%i.png"
 
+#if 0
 #ifdef _EMIT_PALETTE
 static unsigned char textbox_color_palette[1024] = {
 	/* R, G, B, A */
@@ -27,6 +30,7 @@ static unsigned char textbox_color_palette[1024] = {
 	0xFF, 0xFF, 0xFF, 0xFF,
 };
 #endif
+#endif
 
 
 struct textbox {
@@ -40,8 +44,8 @@ struct textbox {
 	DARNIT_TILE		*face;
 	
 	/* Textbox */
-	DARNIT_TILEMAP		*tc;
-	DARNIT_TEXT_SURFACE	*text;
+	struct menu_s		*tb_m;
+	int			text_slot;
 
 	/* Question box */
 	DARNIT_TILEMAP		*qt;

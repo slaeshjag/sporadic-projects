@@ -4,8 +4,8 @@ include $(TOPDIR)/config.mk
 SRCFILES=$(wildcard *.c)
 OBJFILES=$(SRCFILES:.c=.o)
 #BIN = ../bin/dungeon_gen.elf
-GAMELIBS = game.a common.a
-.PHONY: all clean common game ai
+GAMELIBS = game.a common.a ui.a
+.PHONY: all clean common game ai ui
 
 all: $(OBJFILES) $(DEPENDS) game
 	@echo " [ LD ]	$(BIN)"
@@ -14,9 +14,13 @@ all: $(OBJFILES) $(DEPENDS) game
 	@echo
 
 
-game: ai
+game: ai ui
 	@echo " [ CD ] game/"
 	+@make -C game/
+
+ui:
+	@echo " [ CD ] ui/"
+	+@make -C ui/
 
 ai: common
 	@echo " [ CD ] ai/"
@@ -35,6 +39,8 @@ clean:
 	+@make -C common clean
 	@echo " [ CD ] game/"
 	+@make -C game clean
+	@echo " [ CD ] ui/"
+	+@make -C ui clean
 	@echo " [ CD ] ai/"
 	+@make -C ai clean
 	@echo "Done."
