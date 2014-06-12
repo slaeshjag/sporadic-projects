@@ -611,4 +611,3 @@ void object_silence_all(int silence) {
 	
 	return;
 }
-	
