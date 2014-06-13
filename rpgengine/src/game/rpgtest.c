@@ -73,6 +73,8 @@ int main(int argc, char **argv) {
 	world_init();
 	world.state = STATE_DUMMY_E;
 	world.new_state = STATE_MENU_E;
+	world.party = party_new();
+	party_member_add(world.party, "res/battle/baurn.pty");
 
 	//map_load("res/testroom.ldmz", 1);
 	map_load("res/testmap.ldmz", 1);

@@ -32,7 +32,7 @@ static void party_read_stat_line(DARNIT_FILE *f, struct party_stat_s *s) {
 	char buff[512];
 
 	d_file_getln(buff, 512, f);
-	sscanf(buff, "%f %f %f %f %f", &s->att, &s->def, &s->s_att, &s->s_def, &s->agil);
+	sscanf(buff, "%f %f %f %f %f %f %f", &s->hp, &s->mp, &s->att, &s->def, &s->s_att, &s->s_def, &s->agil);
 	return;
 }
 
@@ -66,6 +66,7 @@ void party_member_set_exp(struct party_s *p, int key, int32_t exp) {
 	if ((slot = party_member_lookup(p, key)) < 0)
 		return;
 	p->member[slot].exp = exp;
+	party_calculate_stats(p);
 	return;
 }
 
@@ -98,8 +99,6 @@ void party_member_leave(struct party_s *p, int member_key) {
 
 	if ((i = party_member_lookup(p, member_key)) < 0)
 		return;
-	free(p->member[i].name);
-	free(p->member[i].face);
 
 	d = p->members - i;
 	if (d) {
