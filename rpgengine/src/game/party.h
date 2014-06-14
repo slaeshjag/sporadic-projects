@@ -36,17 +36,27 @@ enum party_move_spread_type_e {
 };
 
 
+enum party_move_type_e {
+	PARTY_MOVE_TYPE_RANGED,
+	PARTY_MOVE_TYPE_PHYSICAL,
+	PARTY_MOVE_TYPE_NONE,
+};
+
+
 struct party_move_s {
 	char				name[PARTY_NAME_LENGTH];
 	char				desc[PARTY_MOVE_DESC_LENGTH];
 
 	enum party_move_spread_type_e	spead_type;
 	float				spread_radius;
-	/* If the move has a positive effect or negative */
-	int				sign;
+	float				power;
 	
 	int				minimum_exp;
-	struct party_stat_s		effect;
+	enum party_move_type_e		type;
+	struct party_stat_s		src_rel_effect;
+	struct party_stat_s		src_abs_effect;
+	struct party_stat_s		dst_rel_effect;
+	struct party_stat_s		dst_abs_effect;
 
 	/* TODO: Paths to animations etc. */
 };
@@ -58,16 +68,23 @@ struct party_move_table_s {
 	int				moves;
 };
 
+
+struct party_member_battle_state_s {
+	int				map_object;
+	int				ready;
+};
+
+
 struct party_member_s {
 	char				name[PARTY_NAME_LENGTH];
 	char				face[PARTY_FACE_LENGTH];
 	int				key;
 
-	int				map_object;
 
 	int32_t				exp;
 
 	struct party_base_stat_s	base_stat;
+	struct party_stat_s		cur_stat;
 	struct party_move_table_s	move;
 };
 

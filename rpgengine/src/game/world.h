@@ -3,6 +3,7 @@
 
 #include "map.h"
 #include "party.h"
+#include "battle.h"
 #include "rpgtest.h"
 
 #define	WORLD_FONT_SIZE		28
@@ -26,6 +27,7 @@ struct world_s {
 	struct map_s		map;
 	struct textbox		*textbox;
 	struct party_s		*party;
+	struct battle_s		battle;
 	enum state_e		state;
 	enum state_e		new_state;
 
