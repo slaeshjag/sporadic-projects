@@ -62,23 +62,23 @@ float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_me
 	
 	/* Test angle */
 	if (cx - x < 0) {
-		if (cy - y < 0) {		/* Quadrant 2 */
+		if (cy < 0) {			/* Quadrant 2 */
 			ta = atanf((float) cy / (float) cx) * 180.f / M_PI + 90.f;
-		} else if (cy - y > 0) {	/* Quadrant 3 */
+		} else if (cy > 0) {		/* Quadrant 3 */
 			ta = -1 * atanf((float) cy / (float) cx) * 180.f / M_PI + 180.f;
 		} else
 			ta = 180;
 	} else if (cx - x > 0) {
-		if (cy - y < 0) {		/* Quadrant 1 */
+		if (cy < 0) {			/* Quadrant 1 */
 			ta = -1 * atanf((float) cy / (float) cx) * 180.f / M_PI;
-		} else if (cy - y > 0) {	/* Quadrant 4 */
+		} else if (cy > 0) {		/* Quadrant 4 */
 			ta = 360.f - atanf((float) cy / (float) cx) * 180.f / M_PI;
 		} else
 			ta = 0;
 	} else {
-		if (cy - y < 0)
+		if (cy < 0)
 			ta = 90;
-		else if (cy - y > 0)
+		else if (cy > 0)
 			ta = 270;
 		else
 			return 1.0f;
@@ -89,7 +89,7 @@ float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_me
 		return 0.0f;
 
 	if (movep->spread_type == PARTY_MOVE_SPREAD_TYPE_NONE) {
-		if (x != cx || y != cy)
+		if (cx || cy)
 			return 0.0f;
 		else
 			return 1.0f;
