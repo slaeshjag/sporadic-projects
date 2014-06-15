@@ -84,6 +84,10 @@ float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_me
 			return 1.0f;
 	}
 
+	/* Check if this object is outside the angle */
+	if (ta - angle <= -movep->spread_angle || ta - angle >= movep->spread_angle)
+		return 0.0f;
+
 	if (movep->spread_type == PARTY_MOVE_SPREAD_TYPE_NONE) {
 		if (x != cx || y != cy)
 			return 0.0f;
