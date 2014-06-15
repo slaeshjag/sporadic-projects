@@ -28,9 +28,9 @@ void battle_calc_apply_stats(int src_party, int src_member, int dst_party, int d
 }
 
 
-float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_member, int move, int x, int y) {
+float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_member, int move, int x, int y, int angle) {
 	struct party_move_s *movep;
-	int cx, cy, cw, ch, obj;
+	int cx, cy, cw, ch, obj, ta;
 	float scale;
 
 	/* Disqualify marty members that shouldn't be affected */
@@ -50,15 +50,39 @@ float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_me
 
 	if (movep->spread_type == PARTY_MOVE_SPREAD_TYPE_NO_DECAY)
 		return 1.0f;
-
+	
 	d_sprite_hitbox(world.map.object.entry[obj].sprite, &cx, &cy, &cw, &ch);
 	cx += (world.map.object.entry[obj].x >> 8);
-	cy += (world.map.object.entry[obj].y >> 8);;
+	cy += (world.map.object.entry[obj].y >> 8);
 	cx += cw / 2;
 	cy += ch / 2;
 
 	cx -= x;
 	cy -= y;
+	
+	/* Test angle */
+	if (cx - x < 0) {
+		if (cy - y < 0) {		/* Quadrant 2 */
+			ta = atanf((float) cy / (float) cx) * 180.f / M_PI + 90.f;
+		} else if (cy - y > 0) {	/* Quadrant 3 */
+			ta = -1 * atanf((float) cy / (float) cx) * 180.f / M_PI + 180.f;
+		} else
+			ta = 180;
+	} else if (cx - x > 0) {
+		if (cy - y < 0) {		/* Quadrant 1 */
+			ta = -1 * atanf((float) cy / (float) cx) * 180.f / M_PI;
+		} else if (cy - y > 0) {	/* Quadrant 4 */
+			ta = 360.f - atanf((float) cy / (float) cx) * 180.f / M_PI;
+		} else
+			ta = 0;
+	} else {
+		if (cy - y < 0)
+			ta = 90;
+		else if (cy - y > 0)
+			ta = 270;
+		else
+			return 1.0f;
+	}
 
 	if (movep->spread_type == PARTY_MOVE_SPREAD_TYPE_NONE) {
 		if (x != cx || y != cy)

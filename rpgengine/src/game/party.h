@@ -49,6 +49,7 @@ struct party_move_s {
 	char					desc[PARTY_MOVE_DESC_LENGTH];
 
 	enum party_move_spread_type_e		spread_type;
+	int					spread_angle;
 	float					spread_radius;
 	float					power;
 	int					positive_effect;
