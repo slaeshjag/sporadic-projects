@@ -456,12 +456,14 @@ void object_loop() {
 	struct aicomm_struct ac;
 
 	for (i = 0; i < OBJECT_MAX; i++) {
-		if (!world.map.object.entry[i].loop)
-			continue;
-		ac.msg = AICOMM_MSG_LOOP;
-		ac.self = i;
-		ac.from = -1;
-		object_message_loop(ac);
+		if (world.state != STATE_BATTLE_E) {
+			if (!world.map.object.entry[i].loop)
+				continue;
+			ac.msg = AICOMM_MSG_LOOP;
+			ac.self = i;
+			ac.from = -1;
+			object_message_loop(ac);
+		}
 		object_handle_movement(i);
 	}
 

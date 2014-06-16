@@ -43,6 +43,7 @@ void state_handle() {
 		case STATE_MENU_E:
 			world.new_state = STATE_OVERWORLD_E;
 			break;
+		case STATE_BATTLE_E:
 		case STATE_OVERWORLD_E:
 			/* NOTE TO SELF: Player control will be frozen by broadcasting MSG_SILE */
 			map_logic();

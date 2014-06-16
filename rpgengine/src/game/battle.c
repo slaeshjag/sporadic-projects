@@ -61,14 +61,14 @@ float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_me
 	cy -= y;
 	
 	/* Test angle */
-	if (cx - x < 0) {
+	if (cx < 0) {
 		if (cy < 0) {			/* Quadrant 2 */
 			ta = atanf((float) cy / (float) cx) * 180.f / M_PI + 90.f;
 		} else if (cy > 0) {		/* Quadrant 3 */
 			ta = -1 * atanf((float) cy / (float) cx) * 180.f / M_PI + 180.f;
 		} else
 			ta = 180;
-	} else if (cx - x > 0) {
+	} else if (cx > 0) {
 		if (cy < 0) {			/* Quadrant 1 */
 			ta = -1 * atanf((float) cy / (float) cx) * 180.f / M_PI;
 		} else if (cy > 0) {		/* Quadrant 4 */
@@ -117,6 +117,22 @@ float battle_calc_scale(int src_party, int src_member, int dst_party, int dst_me
 
 
 void battle_attack(int src_party, int src_member, int x, int y, int angle, int move) {
-	
+	int i;
+	float scale;
 
+	for (i = 0; i < world.battle.party1->members; i++) {
+		scale =  battle_calc_scale(src_party, src_member, 0, i, move, x, y, angle);
+		if (scale <= 0.0f)
+			continue;
+
+		battle_calc_apply_stats(src_party, src_member, 0, i, move, scale);
+	}
+
+	for (i = 0; i < world.battle.party2->members; i++) {
+		scale =  battle_calc_scale(src_party, src_member, 1, i, move, x, y, angle);
+		if (scale <= 0.0f)
+			continue;
+
+		battle_calc_apply_stats(src_party, src_member, 1, i, move, scale);
+	}
 }
