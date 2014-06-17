@@ -10,7 +10,6 @@ struct party_s *party_new() {
 	struct party_s *p;
 
 	p = malloc(sizeof(*p));
-	p->member = NULL;
 	p->members = 0;
 	p->key_cnt = 0;
 	
@@ -76,7 +75,9 @@ int party_member_add(struct party_s *p, const char *member_descr) {
 	int slot = p->members++;
 	DARNIT_FILE *f;
 
-	p->member = realloc(p->member, sizeof(*p->member) * (p->members));
+	if (p->members >= PARTY_MAX_SIZE)
+		return -1;
+	
 	p->member[slot].key = p->key_cnt++;
 
 	if (!(f = d_file_open(member_descr, "r"))) {
@@ -104,11 +105,8 @@ void party_member_leave(struct party_s *p, int member_key) {
 	if (d) {
 		memmove(&p->member[i], &p->member[i + 1], sizeof(*p->member) * d);
 		p->members--;
-		p->member = realloc(p->member, sizeof(*p->member) * p->members);
 	}
 
-	if (!p->members)
-		free(p->member), p->member = NULL;
 	return;
 }
 

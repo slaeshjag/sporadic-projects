@@ -136,3 +136,33 @@ void battle_attack(int src_party, int src_member, int x, int y, int angle, int m
 		battle_calc_apply_stats(src_party, src_member, 1, i, move, scale);
 	}
 }
+
+
+void battle_ui_update() {
+	int i, x, y, w;
+
+	/* Party 1 */
+	for (i = 0; i < PARTY_MAX_SIZE; i++) {
+		x = BATTLE_SCREEN_MARGIN;
+		y = world.config.face_h;
+		y += d_font_glyph_hs(world.config.font);
+		y += world.config.tile_h;
+		y += BATTLE_SCREEN_MARGIN;
+		y *= i;
+		y += BATTLE_SCREEN_MARGIN;
+
+		d_render_tile_move(world.battle.ui.hp_mp_meters, i * 2, x, y);
+	}
+}
+
+
+void battle_draw_ui() {
+	
+}
+
+
+void battle_init() {
+	world.battle.ui.hp_mp_meters = d_render_tile_new(PARTY_MAX_SIZE * 2 * 2, world.config.ts_sys);
+
+	return;
+}

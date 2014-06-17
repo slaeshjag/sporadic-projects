@@ -3,6 +3,7 @@
 #include "map.h"
 #include "object.h"
 #include "textbox.h"
+#include "battle.h"
 
 
 void state_handle() {

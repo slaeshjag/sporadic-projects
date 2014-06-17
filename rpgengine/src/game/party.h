@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#define	PARTY_MAX_SIZE				4
 #define	PARTY_NAME_LENGTH			32
 #define	PARTY_FACE_LENGTH			48
 #define	PARTY_MOVE_DESC_LENGTH			128
@@ -95,7 +96,7 @@ struct party_member_s {
 
 
 struct party_s {
-	struct party_member_s		*member;
+	struct party_member_s		member[PARTY_MAX_SIZE];
 	int				members;
 	int				key_cnt;
 

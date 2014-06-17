@@ -1,6 +1,7 @@
 #include "map.h"
 #include "world.h"
 #include "textbox.h"
+#include "battle.h"
 #include "ui/menu.h"
 
 void world_init() {
@@ -14,6 +15,7 @@ void world_init() {
 
 	menu_init(WORLD_UI_PATH, world.config.tile_w, world.config.tile_h);
 	map_init();
+	battle_init();
 
 	n = world.config.tile_h * 4;
 	textbox_init(d_platform_get().screen_w, n, 0, d_platform_get().screen_h - n, 10, 10, 10, 10);
