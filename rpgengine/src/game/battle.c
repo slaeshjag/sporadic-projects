@@ -139,10 +139,10 @@ void battle_attack(int src_party, int src_member, int x, int y, int angle, int m
 
 
 void battle_ui_update() {
-	int i, x, y, w;
+	int i, x, y, w, cx, cy;
 
 	/* Party 1 */
-	for (i = 0; i < PARTY_MAX_SIZE; i++) {
+	for (i = 0; i < world.battle.party1->members; i++) {
 		x = BATTLE_SCREEN_MARGIN;
 		y = world.config.face_h;
 		y += d_font_glyph_hs(world.config.font);
@@ -151,13 +151,35 @@ void battle_ui_update() {
 		y *= i;
 		y += BATTLE_SCREEN_MARGIN;
 
-		d_render_tile_move(world.battle.ui.hp_mp_meters, i * 2, x, y);
+		w = world.battle.party1->member[i].cur_stat.hp * BATTLE_HPMP_LENGTH / world.battle.party1->member[i].base_stat.calculated.hp;
+		cx = world.config.tile_w * 6;
+		cy = world.config.tile_h;
+		if (w) {
+			d_render_tile_move(world.battle.ui.hp_mp_meters, i * 2, x, y);
+			d_render_tile_tilesheet_coord_set(world.battle.ui.hp_mp_meters, i * 2, cx, cy, w, BATTLE_HPMP_HEIGHT);
+			d_render_tile_size_set(world.battle.ui.hp_mp_meters, i * 2, w, BATTLE_HPMP_HEIGHT);
+		} else
+			d_render_tile_clear(world.battle.ui.hp_mp_meters, i * 2);
+		cx += w;
+		x += w;
+		w = BATTLE_HPMP_LENGTH - w;
+		cy += BATTLE_HPMP_HEIGHT;
+		if (w) {
+			d_render_tile_move(world.battle.ui.hp_mp_meters, i * 2 + 1, x, y);
+			d_render_tile_tilesheet_coord_set(world.battle.ui.hp_mp_meters, i * 2 + 1, cx, cy, w, BATTLE_HPMP_HEIGHT);
+			d_render_tile_size_set(world.battle.ui.hp_mp_meters, i * 2 + 1, w, BATTLE_HPMP_HEIGHT);
+		} else
+			d_render_tile_clear(world.battle.ui.hp_mp_meters, i * 2 + 1);
 	}
 }
 
 
 void battle_draw_ui() {
+	battle_ui_update();
 	
+	d_render_tile_draw(world.battle.ui.hp_mp_meters, 2);
+	if (world.battle.party1->member[0].cur_stat.hp >= 1.f)
+		world.battle.party1->member[0].cur_stat.hp -= 0.2;
 }
 
 

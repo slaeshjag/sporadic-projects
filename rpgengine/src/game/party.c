@@ -51,7 +51,7 @@ void party_calculate_stats(struct party_s *p) {
 			n = M_PI_2 / vec_r[j] * p->member[i].exp;
 			if (n > M_PI_2)
 				n = M_PI_2;
-			vec_c[j] = sinf(n) * vec_mult[j];
+			vec_c[j] += sinf(n) * vec_mult[j];
 		}
 	}
 

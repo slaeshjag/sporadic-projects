@@ -55,6 +55,7 @@ void state_handle() {
 			d_render_blend_enable();
 			textbox_draw();
 			d_render_blend_disable();
+			battle_draw_ui();
 			d_render_end();
 			break;
 		default:
@@ -69,6 +70,8 @@ void state_handle() {
 
 
 int main(int argc, char **argv) {
+	int n;
+
 	/* We're aiming for Pyra, not pandora */
 	d_init_custom("RPGtest", 1280, 720, 0, "rpgtest", NULL);
 	//d_init_custom("RPGtest", 800, 480, 0, "rpgtest", NULL);
@@ -76,7 +79,10 @@ int main(int argc, char **argv) {
 	world.state = STATE_DUMMY_E;
 	world.new_state = STATE_MENU_E;
 	world.party = party_new();
-	party_member_add(world.party, "res/battle/baurn.pty");
+	world.battle.party1 = world.party;
+	n = party_member_add(world.party, "res/battle/baurn.pty");
+	party_member_set_exp(world.party, n, 100);
+	world.battle.party1->member[0].cur_stat = world.battle.party1->member[0].base_stat.calculated;
 
 	//map_load("res/testroom.ldmz", 1);
 	map_load("res/testmap.ldmz", 1);

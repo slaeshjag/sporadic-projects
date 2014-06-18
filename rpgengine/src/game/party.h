@@ -96,9 +96,9 @@ struct party_member_s {
 
 
 struct party_s {
-	struct party_member_s		member[PARTY_MAX_SIZE];
-	int				members;
-	int				key_cnt;
+	struct party_member_s			member[PARTY_MAX_SIZE];
+	int					members;
+	int					key_cnt;
 
 };
 
