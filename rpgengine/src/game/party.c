@@ -59,18 +59,18 @@ void party_calculate_stats(struct party_s *p) {
 }
 
 
-void party_member_set_exp(struct party_s *p, int key, int32_t exp) {
+void party_member_add_exp(struct party_s *p, int key, int32_t exp) {
 	int slot;
 
 	if ((slot = party_member_lookup(p, key)) < 0)
 		return;
-	p->member[slot].exp = exp;
+	p->member[slot].exp += exp;
 	party_calculate_stats(p);
 	return;
 }
 
 
-int party_member_add(struct party_s *p, const char *member_descr) {
+int party_member_add(struct party_s *p, const char *member_descr, int exp) {
 	char name[128], face[128], buff[512];
 	int slot = p->members++;
 	DARNIT_FILE *f;
@@ -79,6 +79,7 @@ int party_member_add(struct party_s *p, const char *member_descr) {
 		return -1;
 	
 	p->member[slot].key = p->key_cnt++;
+	p->member[slot].exp = exp;
 
 	if (!(f = d_file_open(member_descr, "r"))) {
 		fprintf(stderr, "Unable to open party member descriptor %s\n", member_descr);
@@ -90,6 +91,7 @@ int party_member_add(struct party_s *p, const char *member_descr) {
 	party_read_stat_line(f, &p->member[slot].base_stat.bias);
 	party_read_stat_line(f, &p->member[slot].base_stat.multiple);
 	party_read_stat_line(f, &p->member[slot].base_stat.range);
+	party_calculate_stats(p);
 
 	return p->member[slot].key;
 }

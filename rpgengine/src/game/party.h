@@ -105,8 +105,8 @@ struct party_s {
 
 struct party_s *party_new();
 void party_calculate_stats(struct party_s *p);
-void party_member_set_exp(struct party_s *p, int key, int32_t exp);
-int party_member_add(struct party_s *p, const char *member_descr);
+void party_member_add_exp(struct party_s *p, int key, int32_t exp);
+int party_member_add(struct party_s *p, const char *member_descr, int exp);
 void party_member_leave(struct party_s *p, int member_key);
 struct party_s *party_destroy(struct party_s *p);
 

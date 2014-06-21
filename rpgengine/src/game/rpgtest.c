@@ -80,22 +80,15 @@ int main(int argc, char **argv) {
 	world.new_state = STATE_MENU_E;
 	world.party = party_new();
 	world.battle.party1 = world.party;
-	n = party_member_add(world.party, "res/battle/baurn.pty");
-	party_member_set_exp(world.party, n, 100);
+	n = party_member_add(world.party, "res/battle/baurn.pty", 100);
+	party_member_add_exp(world.party, n, 100);
 	world.battle.party1->member[0].cur_stat = world.battle.party1->member[0].base_stat.calculated;
 
 	//map_load("res/testroom.ldmz", 1);
 	map_load("res/testmap.ldmz", 1);
 
 	for (;;) {
-		#if 0
-		map_logic();
-		d_render_begin();
-		map_draw();
-		d_render_end();
-		#else
 		state_handle();
-		#endif
 
 		d_loop();
 	}

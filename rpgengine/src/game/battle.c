@@ -3,6 +3,7 @@
 #include "world.h"
 #include "battle.h"
 #include "party.h"
+#include "ui/menu.h"
 
 #define	BATTLE_PARTY(party)		((party) ? world.battle.party2 : world.battle.party1)
 
@@ -180,6 +181,26 @@ void battle_draw_ui() {
 	d_render_tile_draw(world.battle.ui.hp_mp_meters, 2);
 	if (world.battle.party1->member[0].cur_stat.hp >= 1.f)
 		world.battle.party1->member[0].cur_stat.hp -= 0.2;
+}
+
+
+void battle_start() {
+	int i;
+	struct party_s *p;
+
+	world.battle.ui.party1_stat = menu_new_container(BATTLE_STATS_WIDTH, d_platform_get().screen_h / world.config.tile_h);
+	world.battle.ui.party2_stat = menu_new_container(BATTLE_STATS_WIDTH, d_platform_get().screen_h / world.config.tile_h);
+	p = world.battle.party1;
+	for (i = 0; i < PARTY_MAX_SIZE; i++) {
+		
+	}
+		
+	/* TODO: Init all the data structures used in battle */
+}
+
+
+void battle_end() {
+	/* TODO: Clean up data structures used in battle */
 }
 
 
