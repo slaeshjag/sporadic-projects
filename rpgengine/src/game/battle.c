@@ -150,7 +150,7 @@ void battle_ui_update() {
 		y += world.config.tile_h;
 		y += BATTLE_SCREEN_MARGIN;
 		y *= i;
-		y += BATTLE_SCREEN_MARGIN;
+		y += BATTLE_SCREEN_MARGIN + d_font_glyph_hs(world.config.font) + world.config.face_h;
 
 		w = world.battle.party1->member[i].cur_stat.hp * BATTLE_HPMP_LENGTH / world.battle.party1->member[i].base_stat.calculated.hp;
 		cx = world.config.tile_w * 6;
@@ -177,7 +177,11 @@ void battle_ui_update() {
 
 void battle_draw_ui() {
 	battle_ui_update();
-	
+
+	d_render_blend_enable();
+	menu_draw(world.battle.ui.party1_stat);
+	menu_draw(world.battle.ui.party2_stat);
+	d_render_blend_disable();
 	d_render_tile_draw(world.battle.ui.hp_mp_meters, 2);
 	if (world.battle.party1->member[0].cur_stat.hp >= 1.f)
 		world.battle.party1->member[0].cur_stat.hp -= 0.2;
@@ -185,13 +189,17 @@ void battle_draw_ui() {
 
 
 void battle_start() {
-	int i;
+	int i, w;
 	struct party_s *p;
 
 	world.battle.ui.party1_stat = menu_new_container(BATTLE_STATS_WIDTH, d_platform_get().screen_h / world.config.tile_h);
 	world.battle.ui.party2_stat = menu_new_container(BATTLE_STATS_WIDTH, d_platform_get().screen_h / world.config.tile_h);
+	menu_set_position(world.battle.ui.party2_stat, d_platform_get().screen_w - BATTLE_STATS_WIDTH * world.config.tile_w, 0);
 	p = world.battle.party1;
-	for (i = 0; i < PARTY_MAX_SIZE; i++) {
+	for (i = 0; i < p->members; i++) {
+		fprintf(stderr, "Arne\n");
+		w = menu_new_widget_text(world.battle.ui.party1_stat, BATTLE_SCREEN_MARGIN, BATTLE_SCREEN_MARGIN, BATTLE_STATS_WIDTH * world.config.tile_w - BATTLE_SCREEN_MARGIN * 2, 32, world.config.font);
+		d_text_surface_string_append(menu_get_surface_from_text(world.battle.ui.party1_stat, w), p->member[i].name);
 		
 	}
 		

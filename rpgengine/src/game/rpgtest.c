@@ -83,6 +83,7 @@ int main(int argc, char **argv) {
 	n = party_member_add(world.party, "res/battle/baurn.pty", 100);
 	party_member_add_exp(world.party, n, 100);
 	world.battle.party1->member[0].cur_stat = world.battle.party1->member[0].base_stat.calculated;
+	battle_start();
 
 	//map_load("res/testroom.ldmz", 1);
 	map_load("res/testmap.ldmz", 1);
