@@ -1,0 +1,14 @@
+#ifndef __RPGTEST_H__
+#define	__RPGTEST_H__
+
+#define	RPGTEST_FADE_TIME		200
+
+enum state_e {
+	STATE_DUMMY_E,
+	STATE_MENU_E,
+	STATE_OVERWORLD_E,
+	STATE_TELEPORTING_E,
+	STATE_BATTLE_E,
+};
+
+#endif

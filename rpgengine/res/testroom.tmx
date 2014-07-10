@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="15" height="15" tilewidth="32" tileheight="32">
+ <properties>
+  <property name="tileset" value="res/tileset.png"/>
+ </properties>
+ <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
+  <image source="tileset.png" width="192" height="256"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="15" height="15">
+  <data encoding="csv">
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29,
+29,29,29,29,29,29,29,29,29,29,29,29,29,29,29
+</data>
+ </layer>
+ <objectgroup name="Object Layer 1" width="15" height="15">
+  <object name="box" type="npc" x="256" y="352" width="32" height="32">
+   <properties>
+    <property name="ai" value="box_ai"/>
+    <property name="sprite" value="res/box.spr"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
