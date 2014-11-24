@@ -25,6 +25,7 @@ struct ObjectEntry {
 	int			pos_x;
 	int			pos_y;
 	int			layer;
+	int			rotation;
 
 	/* Velocity in pixels/second (millipixels per millisecond :B) */
 	int			vel_x;
@@ -37,11 +38,13 @@ struct ObjectEntry {
 	void			*data;
 
 	int			solid;
+	int			id;
 };
 
 
 struct Object {
 	C_DYNALLOC		*obj;
+	DARNIT_BBOX		*bbox;
 };
 
 extern struct Object obj;
