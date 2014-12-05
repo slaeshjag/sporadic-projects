@@ -1,12 +1,14 @@
 #include <limits.h>
 #include "object.h"
+#include "map.h"
 #include "ai.h"
 
 struct Object obj;
 
 struct ObjectFunction object_func_define[] = {
-	{ "test", ai_test_init, ai_test_kill, ai_test_loop },
-	{ NULL, ai_test_init, ai_test_kill, ai_test_loop },
+	{ "test", ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
+	{ "player", ai_test_init, ai_test_kill, ai_player_loop, ai_test_collide, ai_test_collide_map },
+	{ NULL, ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
 };
 
 
@@ -40,11 +42,24 @@ void object_update_pos(struct ObjectEntry *oe) {
 	int x, y, w, h;
 
 	d_sprite_hitbox(oe->sprite, &x, &y, &w, &h);
-	d_bbox_move(obj.bbox, oe->id, oe->pos_x / 1000 + x, oe->pos_y / 1000 + y);
 	d_bbox_resize(obj.bbox, oe->id, w, h);
+	d_bbox_move(obj.bbox, oe->id, oe->pos_x / 1000 + x, oe->pos_y / 1000 + y);
 	d_sprite_move(oe->sprite, oe->pos_x / 1000 + x, oe->pos_y / 1000 + y);
 	d_sprite_rotate(oe->sprite, oe->rotation);
 
+	return;
+}
+
+
+static void object_center_coord(DARNIT_SPRITE *sprite, int *x, int *y) {
+	int sx, sy, sw, sh;
+
+	d_sprite_hitbox(sprite, &sx, &sy, &sw, &sh);
+	*x += sx;
+	*y += sy;
+	*x -= sw / 2;
+	*y += sy / 2;
+	
 	return;
 }
 
@@ -61,6 +76,7 @@ int object_spawn(const char *sprite, const char *ai, int x, int y, int l, DARNIT
 	}
 	oe = c_dynalloc_get(obj.obj, id);
 	oe->sprite = d_sprite_load(sprite, 0, DARNIT_PFORMAT_RGB5A1);
+	object_center_coord(oe->sprite, &x, &y);
 	oe->mobj = mobj;
 	oe->pos_x = x * 1000, oe->pos_y = y * 1000, oe->layer = l;
 	oe->vel_x = oe->vel_y = 0, oe->rotation = 0;
@@ -99,15 +115,117 @@ void object_nuke() {
 }
 
 
+static int get_movement_delta(int d) {
+	int a;
+
+	a = a < 0 ? -1 : 1;
+	if (a * d >= 1000)
+		d = 999;
+	return d * a;
+}
+
+
+static int object_test_collision(struct ObjectEntry *oe, int dx, int dy) {
+	int x, y, w, h, i, coll = 0, xvelc, yvelc, id1, id2;
+	unsigned int list[32], ll;
+	struct ObjectEntry *coe;
+
+	if ((oe->pos_x + dx) / 1000 == oe->pos_x / 1000 && (oe->pos_y + dy) / 1000 == oe->pos_y / 1000)
+		return 0;
+
+	d_sprite_hitbox(oe->sprite, &x, &y, &w, &h);
+	x += (oe->pos_x + dx) / 1000;
+	y += (oe->pos_y + dy) / 1000;
+	
+	ll = d_bbox_test(obj.bbox, x, y, w, h, list, 32);
+	for (i = 0; i < ll; i++) {
+		if (list[i] == oe->id)
+			continue;
+		if (!(coe = c_dynalloc_get(obj.obj, list[i])))
+			continue;
+
+		id1 = oe->id, id2 = coe->id;
+		xvelc = oe->vel_x - coe->vel_x, yvelc = oe->vel_y - coe->vel_y;
+		coe->func.collide(id2, id1, xvelc * -1, yvelc * -1, dx * -1, dy * -1);
+		if (!(oe = c_dynalloc_get(obj.obj, id1))) {
+			fprintf(stderr, "Object despawned\n");
+			return 1;
+		}
+
+		oe->func.collide(id1, id2, xvelc, yvelc, dx, dy);
+		if (!(oe = c_dynalloc_get(obj.obj, id1))) {
+			fprintf(stderr, "Object despawned\n");
+			return 1;
+		}
+
+		if (coe->solid)
+			continue;
+		coll = 1;
+	}
+
+	if (map_check_area(oe->pos_x / 1000 + (dx>0?w-1:0), oe->pos_y / 1000 + (dy>0?h-1:0), dx?(dx<0?-1:1):0, dy?(dy<0?-1:1):0, oe->layer, dy?w:0, dx?h:0)) {
+		return (oe->func.collide_map(oe->id, dx, dy), 1);
+	}
+
+	return coll;
+}
+
+
 void object_loop() {
-	int i, j, cnt;
+	int i, j, k, dts, cnt, dt, dx, dy;
+	unsigned int list[OBJECT_CAP], hits;
 	struct ObjectEntry *oe;
 
-	cnt = c_dynalloc_entries(obj.obj);
-	for (i = 0; j < cnt; i++) {
-		if (!(oe = c_dynalloc_get(obj.obj, i)))
+	dt = d_last_frame_time();
+	hits = d_bbox_test(obj.bbox, map_s.camera.lim_lx, map_s.camera.lim_ly, map_s.camera.lim_bx, map_s.camera.lim_by, list, OBJECT_CAP);
+	for (i = 0; i < hits; i++) {
+		if (!(oe = c_dynalloc_get(obj.obj, list[i])))
 			continue;
-		/* TODO: Handle movement, collision detection */
-		oe->func.loop(i);
+		
+		/* Lets just start with a stupid kind of collision detection */
+		/* It's easier to make a game if *something* works */
+		dx = oe->vel_x * dt;
+		dy = oe->vel_y * dt;
+		for (k = dx; k; k -= get_movement_delta(k)) {
+			dts = get_movement_delta(k);
+			if (object_test_collision(oe, dts, 0))
+				break;
+			oe->pos_x += k;
+		}
+		
+		/* If collision, the object may not exist anymore */
+		if (!(oe = c_dynalloc_get(obj.obj, list[i])))
+			continue;
+		
+		for (k = dy; k; k -= get_movement_delta(k)) {
+			dts = get_movement_delta(k);
+			if (object_test_collision(oe, 0, dts)) {
+				fprintf(stderr, "Collision\n");
+				break;
+			}
+			oe->pos_y += k;
+		}
+		
+		object_update_pos(oe);
+
+		oe->func.loop(list[i]);
 	}
+}
+
+
+void object_render(int layer) {
+	unsigned int i, len, list[OBJECT_CAP];
+	struct ObjectEntry *oe;
+
+	len = d_bbox_test(obj.bbox, map_s.camera.lim_lx, map_s.camera.lim_ly, map_s.camera.lim_bx, map_s.camera.lim_by, list, OBJECT_CAP);
+
+	for (i = 0; i < len; i++) {
+		if (!(oe = c_dynalloc_get(obj.obj, list[i])))
+			continue;
+		if (oe->layer != layer)
+			continue;
+		d_sprite_draw(oe->sprite);
+	}
+	
+	return;
 }

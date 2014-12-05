@@ -16,6 +16,8 @@ struct ObjectFunction {
 	void			(*init)(int id);
 	void			(*kill)(int id);
 	void			(*loop)(int id);
+	void			(*collide)(int mid, int fid, int xvelc, int yvelc, int xdir, int ydir);
+	void			(*collide_map)(int id, int xdir, int ydir);
 	/* TODO: Fill in */
 };
 
@@ -27,7 +29,7 @@ struct ObjectEntry {
 	int			layer;
 	int			rotation;
 
-	/* Velocity in pixels/second (millipixels per millisecond :B) */
+	/* Velocity in pixels/second */
 	int			vel_x;
 	int			vel_y;
 
@@ -46,6 +48,11 @@ struct Object {
 	C_DYNALLOC		*obj;
 	DARNIT_BBOX		*bbox;
 };
+
+int object_spawn(const char *sprite, const char *ai, int x, int y, int l, DARNIT_MAP_OBJECT *mobj);
+void object_nuke();
+void object_loop();
+void object_render(int layer);
 
 extern struct Object obj;
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="53" height="53" tilewidth="32" tileheight="32">
+ <properties>
+  <property name="tileset" value="res/tileset.png"/>
+ </properties>
+ <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
+  <image source="tileset.png" width="256" height="32"/>
+ </tileset>
+ <tileset firstgid="49" name="collision" tilewidth="32" tileheight="32">
+  <image source="zz_collision.png" width="128" height="512"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="53" height="53">
+  <data encoding="base64" compression="zlib">
+   eJzt2bENwCAMAEEU9t85OyQS8OiK6/0WDTDHGPNCz0U0NWhq0NSgqUFTg6YGTQ2aGm68S/6d7cQ97Ni394jv+9o9S/3sadKkqUNTg6YGTQ2aGjQ1aGrQ1KCpQVODpgZNDZoaVv0FrfYCfQ8W9w==
+  </data>
+ </layer>
+ <layer name="collision" width="53" height="53">
+  <data encoding="base64" compression="zlib">
+   eJztzzEKw1AQxFAdTfc/VUjvKsbB+syDqXcl4IE7iaypQNZUIGsqkDUVyJoKZE0FsqYCWVOBN/dGcu83f9jT/nXn6ubTO4Wc1/QlayqQNRXImgpkTQWypgJZU4GsqUDWVCBrKpA1FciaCmRNBbKmAllTgZzbdNo+PshBAQ==
+  </data>
+ </layer>
+ <objectgroup name="Object Layer 1" width="53" height="53">
+  <object x="160" y="128" width="32" height="32">
+   <properties>
+    <property name="ai" value="player"/>
+    <property name="sprite" value="res/player_spr.spr"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
