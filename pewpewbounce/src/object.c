@@ -118,9 +118,11 @@ void object_nuke() {
 static int get_movement_delta(int d) {
 	int a;
 
-	a = a < 0 ? -1 : 1;
+	a = d < 0 ? -1 : 1;
 	if (a * d >= 1000)
 		d = 999;
+	else
+		d = d * a;
 	return d * a;
 }
 
@@ -158,7 +160,7 @@ static int object_test_collision(struct ObjectEntry *oe, int dx, int dy) {
 			return 1;
 		}
 
-		if (coe->solid)
+		if (!coe->solid)
 			continue;
 		coll = 1;
 	}
@@ -190,7 +192,7 @@ void object_loop() {
 			dts = get_movement_delta(k);
 			if (object_test_collision(oe, dts, 0))
 				break;
-			oe->pos_x += k;
+			oe->pos_x += dts;
 		}
 		
 		/* If collision, the object may not exist anymore */
@@ -200,10 +202,9 @@ void object_loop() {
 		for (k = dy; k; k -= get_movement_delta(k)) {
 			dts = get_movement_delta(k);
 			if (object_test_collision(oe, 0, dts)) {
-				fprintf(stderr, "Collision\n");
 				break;
 			}
-			oe->pos_y += k;
+			oe->pos_y += dts;
 		}
 		
 		object_update_pos(oe);

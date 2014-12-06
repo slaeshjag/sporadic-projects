@@ -72,10 +72,10 @@ int map_load(const char *map) {
 
 int map_get_solid(int x, int y, int dx, int dy, int layer) {
 	int x2, y2, tw, th, i, i2, tx, ty;
-	
+
 	if (map_s.map->layers <= layer)
 		return 0;
-
+	
 	x2 = x + dx;
 	y2 = y + dy;
 
