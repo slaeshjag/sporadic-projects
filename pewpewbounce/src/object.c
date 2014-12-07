@@ -7,7 +7,7 @@ struct Object obj;
 
 struct ObjectFunction object_func_define[] = {
 	{ "test", ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
-	{ "player", ai_test_init, ai_test_kill, ai_player_loop, ai_test_collide, ai_test_collide_map },
+	{ "player", ai_player_init, ai_player_kill, ai_player_loop, ai_test_collide, ai_player_collide_map },
 	{ NULL, ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
 };
 

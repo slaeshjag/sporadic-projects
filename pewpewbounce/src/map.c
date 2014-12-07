@@ -13,6 +13,12 @@ int map_unload() {
 }
 
 
+void map_follow_me(int id) {
+	fprintf(stderr, "Following %i\n", id);
+	map_s.camera.follow = id;
+}
+
+
 void map_camera() {
 	struct ObjectEntry *oe;
 	int x, y, w, h, map_w, map_h;
@@ -20,8 +26,10 @@ void map_camera() {
 	if (!map_s.map)
 		return;
 	if (map_s.camera.follow >= 0) {
-		if (!(oe = c_dynalloc_get(obj.obj, map_s.camera.follow)))
+		if (!(oe = c_dynalloc_get(obj.obj, map_s.camera.follow))) {
+			fprintf(stderr, "Object doesn't exist\n");
 			return (map_s.camera.follow = -1, ((void) 0));
+		}
 
 		map_w = map_s.map->layer->tile_w * map_s.map->layer->tilemap->w;
 		map_h = map_s.map->layer->tile_h * map_s.map->layer->tilemap->h;
@@ -36,7 +44,8 @@ void map_camera() {
 	} else
 		x = map_s.camera.x, y = map_s.camera.y;
 
-	map_s.camera.x = x, map_s.camera.y = y;
+	map_s.camera.x += (x - map_s.camera.x) / 10, 
+	map_s.camera.y += (y - map_s.camera.y) / 10;
 	map_s.camera.lim_lx = x - d_platform_get().screen_w / 2;
 	map_s.camera.lim_ly = y - d_platform_get().screen_w / 2;
 	map_s.camera.lim_bx = d_platform_get().screen_w * 2;
@@ -125,9 +134,13 @@ void map_render() {
 		return;
 	map_camera();
 	for (i = 0; i < map_s.map->layers; i++) {
+		d_tilemap_camera_move(map_s.map->layer[i].tilemap, map_s.camera.x, map_s.camera.y);
+		d_render_offset(map_s.camera.x, map_s.camera.y);
 		d_tilemap_draw(map_s.map->layer[i].tilemap);
 		object_render(i);
 	}
+
+	d_render_offset(0, 0);
 
 	return;
 }

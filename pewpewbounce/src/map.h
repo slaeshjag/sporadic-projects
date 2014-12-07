@@ -22,5 +22,6 @@ int map_get_solid(int x, int y, int dx, int dy, int layer);
 int map_check_area(int x, int y, int dx, int dy, int layer, int w, int h);
 int map_load(const char *map);
 void map_render();
+void map_follow_me(int id);
 
 #endif
