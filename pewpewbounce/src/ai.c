@@ -22,7 +22,7 @@ void ai_test_collide(int mid, int fid, int xvelc, int yvelc, int xdir, int ydir)
 }
 
 
-void ai_test_collide_map(int id, int xdir, int ydir) {
+void ai_test_collide_map(int id, int xdir, int ydir, int maptile) {
 	return;
 }
 
@@ -75,7 +75,24 @@ void ai_player_loop(int id) {
 }
 
 
-void ai_player_collide_map(int id, int xdir, int ydir) {
+void ai_player_collide(int mid, int fid, int xvelc, int yvelc, int xdir, int ydir) {
+	struct ObjectEntry *oe;
+	struct AiPlayerState *ai;
+	
+	if (!(oe = c_dynalloc_get(obj.obj, id)))
+		return;
+	ai = oe->data;
+	if (ydir)
+		ai->dir *= -1;
+	if (xdir) {
+		ai->bounce = d_time_get();
+		oe->vel_x *= -1;
+	}
+	/* TODO: Check if the block was breakable */
+}
+
+
+void ai_player_collide_map(int id, int xdir, int ydir, int maptile) {
 	struct ObjectEntry *oe;
 	struct AiPlayerState *ai;
 	

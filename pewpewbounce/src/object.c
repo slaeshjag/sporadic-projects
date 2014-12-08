@@ -7,7 +7,7 @@ struct Object obj;
 
 struct ObjectFunction object_func_define[] = {
 	{ "test", ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
-	{ "player", ai_player_init, ai_player_kill, ai_player_loop, ai_test_collide, ai_player_collide_map },
+	{ "player", ai_player_init, ai_player_kill, ai_player_loop, ai_player_collide, ai_player_collide_map },
 	{ NULL, ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
 };
 
@@ -128,7 +128,7 @@ static int get_movement_delta(int d) {
 
 
 static int object_test_collision(struct ObjectEntry *oe, int dx, int dy) {
-	int x, y, w, h, i, coll = 0, xvelc, yvelc, id1, id2;
+	int x, y, w, h, i, coll = 0, xvelc, yvelc, id1, id2, tile;
 	unsigned int list[32], ll;
 	struct ObjectEntry *coe;
 
@@ -165,8 +165,8 @@ static int object_test_collision(struct ObjectEntry *oe, int dx, int dy) {
 		coll = 1;
 	}
 
-	if (map_check_area(oe->pos_x / 1000 + (dx>0?w-1:0), oe->pos_y / 1000 + (dy>0?h-1:0), dx?(dx<0?-1:1):0, dy?(dy<0?-1:1):0, oe->layer, dy?w:0, dx?h:0)) {
-		return (oe->func.collide_map(oe->id, dx, dy), 1);
+	if ((tile = map_check_area(oe->pos_x / 1000 + (dx>0?w-1:0), oe->pos_y / 1000 + (dy>0?h-1:0), dx?(dx<0?-1:1):0, dy?(dy<0?-1:1):0, oe->layer, dy?w:0, dx?h:0))) {
+		return (oe->func.collide_map(oe->id, dx, dy, tile - 1), 1);
 	}
 
 	return coll;

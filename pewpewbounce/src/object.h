@@ -17,7 +17,7 @@ struct ObjectFunction {
 	void			(*kill)(int id);
 	void			(*loop)(int id);
 	void			(*collide)(int mid, int fid, int xvelc, int yvelc, int xdir, int ydir);
-	void			(*collide_map)(int id, int xdir, int ydir);
+	void			(*collide_map)(int id, int xdir, int ydir, int tile);
 	/* TODO: Fill in */
 };
 
