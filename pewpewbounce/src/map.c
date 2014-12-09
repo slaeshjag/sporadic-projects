@@ -24,36 +24,36 @@ void map_camera() {
 	
 	if (!map_s.map)
 		return;
+	if (map_s.camera.follow < 0)
+		return;
 	
 	map_w = map_s.map->layer->tile_w * map_s.map->layer->tilemap->w;
 	map_h = map_s.map->layer->tile_h * map_s.map->layer->tilemap->h;
 
-	if (map_s.camera.follow >= 0) {
-		if (!(oe = c_dynalloc_get(obj.obj, map_s.camera.follow))) {
-			fprintf(stderr, "Object doesn't exist\n");
-			return (map_s.camera.follow = -1, ((void) 0));
-		}
-	
-		d_sprite_hitbox(oe->sprite, &x, &y, &w, &h);
-		x += oe->pos_x / 1000;
-		y += oe->pos_y / 1000;
-		x += w/2, y += h/2;
-		x -= d_platform_get().screen_w / 2;
-		y -= d_platform_get().screen_h / 2;
-		x = x<0?0:x, y = y<0?0:y;
-	} else
-		x = map_s.camera.x, y = map_s.camera.y;
+	if (!(oe = c_dynalloc_get(obj.obj, map_s.camera.follow))) {
+		fprintf(stderr, "Object doesn't exist\n");
+		return (map_s.camera.follow = -1, ((void) 0));
+	}
 
-	map_s.camera.x += (x - map_s.camera.x) / 10; 
-	map_s.camera.y += (y - map_s.camera.y) / 10;
+	d_sprite_hitbox(oe->sprite, &x, &y, &w, &h);
+	x += oe->pos_x / 1000;
+	y += oe->pos_y / 1000;
+	x += w/2, y += h/2;
+
+	map_s.camera.x += (x - map_s.camera.x - (int)d_platform_get().screen_w / 2) / 10; 
+	map_s.camera.y += (y - map_s.camera.y - (int)d_platform_get().screen_h / 2) / 10;
+	if (map_s.camera.x < 0)
+		map_s.camera.x = 0;
+	if (map_s.camera.y < 0)
+		map_s.camera.y = 0;
 
 	if (map_s.camera.x + d_platform_get().screen_w > map_w)
 		map_s.camera.x = map_w - d_platform_get().screen_w;
 	if (map_s.camera.y + d_platform_get().screen_h > map_h)
 		map_s.camera.y = map_h - d_platform_get().screen_h;
 	
-	map_s.camera.lim_lx = x - d_platform_get().screen_w / 2;
-	map_s.camera.lim_ly = y - d_platform_get().screen_w / 2;
+	map_s.camera.lim_lx = map_s.camera.x - d_platform_get().screen_w / 2;
+	map_s.camera.lim_ly = map_s.camera.y - d_platform_get().screen_w / 2;
 	map_s.camera.lim_bx = d_platform_get().screen_w * 2;
 	map_s.camera.lim_by = d_platform_get().screen_h * 2;
 }
@@ -89,6 +89,8 @@ int map_get_solid(int x, int y, int dx, int dy, int layer) {
 	int x2, y2, tw, th, i, i2, tx, ty;
 	unsigned int mask;
 
+	if (dx && dy)
+		fprintf(stderr, "ERROR\n");
 	if (map_s.map->layers <= layer)
 		return 0;
 	
@@ -103,7 +105,7 @@ int map_get_solid(int x, int y, int dx, int dy, int layer) {
 	i2 = x2 + y2 * map_s.map->layer[layer].tilemap->w;
 	if (i == i2)
 		return 0;
-	mask = dx?(dy<0?0x10000:0x40000):(dx<0?80000:0x20000);
+	mask = dy?(dy<0?0x10000:0x40000):(dx<0?80000:0x20000);
 	if (map_s.map->layer[layer].tilemap->data[i2] & mask)
 		return 1 + i2;
 	return 0;

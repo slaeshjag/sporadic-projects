@@ -14,6 +14,7 @@ void ai_test_collide_map(int id, int xdir, int ydir, int maptile);
 void ai_player_init(int id);
 void ai_player_kill(int id);
 void ai_player_loop(int id);
+void ai_player_collide(int mid, int fid, int xvelc, int yvelc, int xdir, int ydir);
 void ai_player_collide_map(int id, int xdir, int ydir, int maptile);
 
 

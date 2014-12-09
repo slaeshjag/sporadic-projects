@@ -79,7 +79,7 @@ void ai_player_collide(int mid, int fid, int xvelc, int yvelc, int xdir, int ydi
 	struct ObjectEntry *oe;
 	struct AiPlayerState *ai;
 	
-	if (!(oe = c_dynalloc_get(obj.obj, id)))
+	if (!(oe = c_dynalloc_get(obj.obj, mid)))
 		return;
 	ai = oe->data;
 	if (ydir)
