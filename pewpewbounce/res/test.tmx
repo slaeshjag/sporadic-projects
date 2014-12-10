@@ -9,14 +9,19 @@
  <tileset firstgid="9" name="collision" tilewidth="32" tileheight="32">
   <image source="zz_collision.png" width="128" height="512"/>
  </tileset>
+ <layer name="background" width="53" height="53">
+  <data encoding="base64" compression="zlib">
+   eJztw8EJAAAMA6Ej+w/dNfpQcNVUVVVVVVVVVVVV1TcPDMoV8w==
+  </data>
+ </layer>
  <layer name="Tile Layer 1" width="53" height="53">
   <data encoding="base64" compression="zlib">
-   eJzt2TEOgEAIAEHi/f/P9saSA5ZssY2FOpyaqCcizsKehLL2k3EemjRp0tRtyn7Gdpu+22+7NGn6O86W+6m6qtlp0qSJ2YR3yWnrNHEOHfMmfY+Y0EZT17WnSZMmTpoYaWKkiZEmRpoYaWKkiZEmRpoYaWKkiZEmRlX/gqp7AfhUFw8=
+   eJzt2bEKgDAMANFg//+fxU1cW5Nce8ItDuILbUEcETE2bMX1POdqkCZNmjR1ML3P2B1M3/t/uzRp2nk/ZbfSVG3RdKYp8ww42TT7LdnRlDmT7qaKtdFldhXzqn4X+trTpEkTJ02MNDHSxEgTI02MNDHSxEgTI02MNDHSxEgTo6x/QdndDrQU1g==
   </data>
  </layer>
  <layer name="collision" width="53" height="53">
   <data encoding="base64" compression="zlib">
-   eJzt2MEKwyAQRVG3SRuEQov//6XRrZBMwTH4hnvBhYuMnk0gKSmlEnB55DVnNEz2rBXCZM9aIUz2rKtyXUddX6ezrHvMNuVu/3M67+4es02vbh/B9O72EUyt5trr+jidZd2D9951m9Oc0TDdh2lekU0e35KrmUaff/qb+p87PZnS/4gVimhqYdIIk0aYNMKkESaNMGmESSNMGmHSCJNGmDTCpBEmjTBpFNkUbZ1w1Rp4
+   eJzt2MsKgzAQRuFs6wWhUPER+v5P2GQnAR0ho80/nAOzyMIk30bQLaW0BRyPvPZpDZO9Vw9hsvfqIUz2XkcteeY8H6ezrHvcbVqq9ep03tk97jaN1TqCaarWEUyl4hryvJ3Osu7Be++4l9M+rWE6L5rpu5t/F9nU+i3Zo6n1+ae/qa/c6cmU/kf0UERTCZNGmDTCpBEmjTBphEkjTBph0giTRpg0wqQRJo0waYRJo8imaPMD3PcbxQ==
   </data>
  </layer>
  <objectgroup name="Object Layer 1" width="53" height="53">

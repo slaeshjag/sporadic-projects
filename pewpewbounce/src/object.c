@@ -82,6 +82,7 @@ int object_spawn(const char *sprite, const char *ai, int x, int y, int l, DARNIT
 	oe->vel_x = oe->vel_y = 0, oe->rotation = 0;
 	oe->solid = 0;
 	oe->id = id;
+	oe->health = oe->health_max = 4;
 
 	oe->func = object_func_lookup(ai);
 	oe->func.init(id);
@@ -210,6 +211,8 @@ void object_loop() {
 		object_update_pos(oe);
 
 		oe->func.loop(list[i]);
+		if (oe->health <= 0)
+			object_kill(list[i]);
 	}
 }
 

@@ -88,7 +88,6 @@ void ai_player_collide(int mid, int fid, int xvelc, int yvelc, int xdir, int ydi
 		ai->bounce = d_time_get();
 		oe->vel_x *= -1;
 	}
-	/* TODO: Check if the block was breakable */
 }
 
 
@@ -105,5 +104,8 @@ void ai_player_collide_map(int id, int xdir, int ydir, int maptile) {
 		ai->bounce = d_time_get();
 		oe->vel_x *= -1;
 	}
+
+	if (map_get_blocki(maptile, oe->layer) & 0x100000)
+		map_kill_blocki(maptile, oe->layer);
 	return;
 }

@@ -85,6 +85,36 @@ int map_load(const char *map) {
 }
 
 
+unsigned int map_get_blocki(int i, int layer) {
+	return map_s.map->layer[layer].tilemap->data[i];
+}
+
+
+unsigned int map_get_block(int x, int y, int layer) {
+	int tw, th, i;
+
+	if (layer >= map_s.map->layers || layer < 0)
+		return ~0;
+	tw = map_s.map->layer[layer].tile_w;
+	th = map_s.map->layer[layer].tile_h;
+	x /= tw;
+	y /= th;
+
+	if (x > map_s.map->layer[layer].tilemap->w || y > map_s.map->layer[layer].tilemap->h || x < 0 || y < 0)
+		return ~0;
+	i = x + y * map_s.map->layer[layer].tilemap->w;
+	return map_get_blocki(i, layer);
+}
+
+
+int map_kill_blocki(int i, int layer) {
+	map_s.map->layer[layer].tilemap->data[i] = 0;
+	d_tilemap_recalc(map_s.map->layer[layer].tilemap);
+
+	/* TODO: Animate */
+}
+
+
 int map_get_solid(int x, int y, int dx, int dy, int layer) {
 	int x2, y2, tw, th, i, i2, tx, ty;
 	unsigned int mask;

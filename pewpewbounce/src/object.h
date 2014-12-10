@@ -41,6 +41,9 @@ struct ObjectEntry {
 
 	int			solid;
 	int			id;
+
+	int			health;
+	int			health_max;
 };
 
 

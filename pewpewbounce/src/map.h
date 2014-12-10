@@ -20,6 +20,9 @@ struct Map {
 extern struct Map map_s;
 int map_get_solid(int x, int y, int dx, int dy, int layer);
 int map_check_area(int x, int y, int dx, int dy, int layer, int w, int h);
+unsigned int map_get_blocki(int i, int layer);
+unsigned int map_get_block(int x, int y, int layer);
+int map_kill_blocki(int i, int layer);
 int map_load(const char *map);
 void map_render();
 void map_follow_me(int id);
