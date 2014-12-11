@@ -8,6 +8,7 @@ struct Object obj;
 struct ObjectFunction object_func_define[] = {
 	{ "test", ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
 	{ "player", ai_player_init, ai_player_kill, ai_player_loop, ai_player_collide, ai_player_collide_map },
+	{ "crawler", ai_crawler_init, ai_crawler_kill, ai_crawler_loop, ai_crawler_collide, ai_crawler_collide_map },
 	{ NULL, ai_test_init, ai_test_kill, ai_test_loop, ai_test_collide, ai_test_collide_map },
 };
 
@@ -81,6 +82,7 @@ int object_spawn(const char *sprite, const char *ai, int x, int y, int l, DARNIT
 	oe->pos_x = x * 1000, oe->pos_y = y * 1000, oe->layer = l;
 	oe->vel_x = oe->vel_y = 0, oe->rotation = 0;
 	oe->solid = 0;
+	oe->invincible = 0;
 	oe->id = id;
 	oe->health = oe->health_max = 4;
 
@@ -98,7 +100,7 @@ void object_kill(int id) {
 
 	if (!(oe = c_dynalloc_get(obj.obj, id)))
 		return;
-	d_bbox_delete(obj.bbox, id);
+	d_bbox_move(obj.bbox, id, INT_MAX - 1, INT_MAX - 1);
 	oe->func.kill(id);
 	d_sprite_free(oe->sprite);
 	c_dynalloc_release(obj.obj, id);
@@ -232,4 +234,16 @@ void object_render(int layer) {
 	}
 	
 	return;
+}
+
+
+void object_damage(int object, int amount) {
+	struct ObjectEntry *oe;
+	
+	if (!(oe = c_dynalloc_get(obj.obj, object)))
+		return;
+	if (d_time_get() - oe->invincible <= OBJECT_INVINCIBLE_TIMER)
+		return;
+	oe->health -= amount;
+	oe->invincible = d_time_get();
 }

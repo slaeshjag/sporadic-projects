@@ -37,6 +37,7 @@ void ai_player_init(int id) {
 	oe = c_dynalloc_get(obj.obj, id);
 	oe->data = ai;
 	map_follow_me(id);
+	oe->solid = 1;
 
 	return;
 }
@@ -44,8 +45,11 @@ void ai_player_init(int id) {
 
 void ai_player_kill(int id) {
 	struct ObjectEntry *oe;
-
+	
+	fprintf(stderr, "KILL\n");
+	oe = c_dynalloc_get(obj.obj, id);
 	free(oe->data);
+	oe->data = NULL;
 	return;
 }
 

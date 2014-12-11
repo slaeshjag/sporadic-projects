@@ -5,6 +5,8 @@
 #define	AI_PLAYER_VEL_BOOST	500
 #define	AI_PLAYER_BOUNCE_TIME	100
 
+#include "ai/crawler.h"
+
 void ai_test_init(int id);
 void ai_test_kill(int id);
 void ai_test_loop(int id);

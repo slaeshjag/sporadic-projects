@@ -2,6 +2,7 @@
 #define	__OBJECT_H__
 
 #define	OBJECT_CAP		4096
+#define	OBJECT_INVINCIBLE_TIMER	500
 
 #include <copypasta/copypasta.h>
 #include <darnit/darnit.h>
@@ -41,6 +42,7 @@ struct ObjectEntry {
 
 	int			solid;
 	int			id;
+	int			invincible;
 
 	int			health;
 	int			health_max;
@@ -56,6 +58,7 @@ int object_spawn(const char *sprite, const char *ai, int x, int y, int l, DARNIT
 void object_nuke();
 void object_loop();
 void object_render(int layer);
+void object_damage(int object, int amount);
 
 extern struct Object obj;
 

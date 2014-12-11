@@ -31,5 +31,11 @@
     <property name="sprite" value="res/player_spr.spr"/>
    </properties>
   </object>
+  <object x="480" y="128" width="32" height="32">
+   <properties>
+    <property name="ai" value="crawler"/>
+    <property name="sprite" value="res/player_spr.spr"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
